@@ -192,6 +192,8 @@ body.trainEditing .hero{display:none}
 #trainShell.isEditingTrains #typeNav:before{content:'Editar Trains';font-size:22px;font-weight:800;color:var(--text);display:block}
 @media(max-width:600px){#trainShell.isEditingTrains #typeList{grid-template-columns:1fr}#trainShell.isEditingTrains .typeTools{flex-wrap:wrap}#trainShell.isEditingTrains .typeTools button{flex:1}}
 
+body.alignTrainNav #typeList:not(.isEditing){scroll-snap-type:none}
+.pickerSearchInput{width:100%;min-height:44px;background:#0d172b;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px;font-size:16px}
 #pickerExercise optgroup{font-weight:800;color:#ebbf68;background:#101c30}
 #pickerExercise option{font-weight:500;color:var(--text);background:#15243a}
 .typeChip .tabBtn.isTrained{border-color:#37785a;background:rgba(22,101,75,.16)}
@@ -254,8 +256,8 @@ body.trainEditing .hero{display:none}
       <label class="field">Foco<select id="editFocus"></select></label>
       <label class="field full">Nome do exercício<input id="editName" required maxlength="120" autocomplete="off"></label>
       <label class="field">Bloco do treino<input id="editBlock" required maxlength="60" placeholder="Ex.: Bíceps"></label>
-      <label class="field">Séries/Repetições/Tempo<input id="editMeta" required maxlength="120" placeholder="Ex.: 3 × 10–12 ou 40 segundos"></label>
-      <label class="field">Carga sugerida (kg)<input id="editLoad" type="text" maxlength="40" ></label>
+      <label class="field">Séries x Repetição<input id="editMeta" required maxlength="120" placeholder="Ex.: 3 × 10–12 ou 40 segundos"></label>
+      <label class="field">Carga<input id="editLoad" type="text" maxlength="40" ></label>
       <label class="field full">Link do vídeo no YouTube (opcional)<input id="editUrl" type="url" maxlength="500" placeholder="https://www.youtube.com/shorts/…"></label>
       <label class="field full">Suas observações<textarea id="editNotes" maxlength="1000" placeholder="Regulagem da máquina, carga, adaptações…"></textarea></label>
     </div>
@@ -269,9 +271,10 @@ body.trainEditing .hero{display:none}
   <p class="pickerPlan" id="pickerPlan"></p>
   <div class="pickerFields">
    <label class="field">Foco<select id="pickerFocus" onchange="renderPickerOptions()"></select></label>
-   <label class="field">Exercício<select id="pickerExercise" required onchange="updatePickerReps()"></select></label>
-   <label class="field">Séries/Repetições/Tempo<input id="pickerReps" type="text" required maxlength="120" autocomplete="off"></label>
-   <label class="field">Carga (kg)<input id="pickerLoad" type="text" maxlength="40"  autocomplete="off"></label>
+   <label class="field">Pesquisar exercício<input id="pickerSearch" class="pickerSearchInput" type="search" placeholder="Digite o nome do exercício" autocomplete="off" oninput="renderPickerOptions()"></label>
+    <label class="field">Exercício<select id="pickerExercise" required onchange="updatePickerReps()"></select></label>
+   <label class="field">Séries x Repetição<input id="pickerReps" type="text" required maxlength="120" autocomplete="off"></label>
+   <label class="field">Carga<input id="pickerLoad" type="text" maxlength="40"  autocomplete="off"></label>
   </div>
   <p class="pickerError" id="pickerError" role="alert"></p>
   <div class="editorFooter"><button type="button" onclick="closeDialog('exercisePicker')">Cancelar</button><button id="pickerSubmit" class="primary">Adicionar</button></div>
@@ -312,7 +315,7 @@ function fmtFull(d) { return d.toLocaleDateString("pt-BR", { day: "2-digit", mon
 function weekKeyFromDate(date) { const s = startOfWeek(date); return `${s.getFullYear()}-${s.getMonth() + 1}-${s.getDate()}`; }
 function weekKey() { return weekKeyFromDate(new Date()); }
 const gymCatalog = [
-    ["AGACHAMENT SUMÔ ARTICULADO", "j2_yU2dfvSc", "composto", "Pernas"],
+    ["AGACHAMENTO SUMÔ ARTICULADO", "j2_yU2dfvSc", "composto", "Pernas"],
     ["ELEVAÇÃO LATERAL MÁQUINA", "X2FsuMucRzI", "ombros", "Ombros"],
     ["HACK 45°", "qQtgx3pXWGc", "composto", "Pernas"],
     ["ELEVAÇÃO PÉLVICA ARTICULADA", "_Cjet97u0aA", "gluteos", "Glúteos"],
@@ -334,7 +337,7 @@ const gymCatalog = [
     ["FLY INVERTIDO", "F0zCUh13poI", "posteriorOmbro", "Ombros posteriores"],
     ["PULLEY FRENTE", "fGfj9P1h92o", "puxada", "Costas"],
     ["REMADA MÁQUINA", "FEGbQi4i67Y", "remada", "Costas"],
-    ["SIMULADOR DE REMO", "g5xfVaOPKxA", "cardio", "Cardio"],
+    null,
     ["PULLEY FECHADO", "ip9FyHyxBtQ", "puxada", "Costas"],
     ["FLY MÁQUINA", "wwShtC4uwmw", "peito", "Peito"],
     ["CADEIRA FLEXORA", "u6aPmWq8GDA", "posterior", "Posteriores"],
@@ -350,12 +353,12 @@ const gymCatalog = [
     ["ABDOMEN MÁQUINA", "o48aSbqv1ss", "core", "Abdômen"],
     ["AGACHAMENTO LIVRE", "https://www.youtube.com/shorts/WpnocUfvfaw", "composto", "Quadríceps", "4 × 20/15/12/10"],
     ["AFUNDO NO SMITH", "https://www.youtube.com/watch?v=sUdDilrlHtM", "composto", "Pernas", "4 × 10"],
-    ["CARDIO (BIKE MODERADA)", "https://youtu.be/yvHOkwZVyZo", "cardio", "Cardio", "Bike moderada"],
+    ["CARDIO", "https://youtu.be/yvHOkwZVyZo", "cardio", "Cardio", "Bike moderada"],
     ["SUPINO RETO", "https://www.youtube.com/watch?v=72UUJVBuT7o", "supino", "Peito", "3 × 12"],
     ["DESENVOLVIMENTO", "https://www.youtube.com/shorts/DFXtzdXN_iY", "ombros", "Ombros", "4 × 10"],
     ["ROSCA DIRETA NA POLIA", "https://www.youtube.com/watch?v=HJ8NvI8EbPs", "biceps", "Bíceps", "4 × 10"],
     ["TRÍCEPS CORDA", "https://www.youtube.com/shorts/wr2O31uVJWs", "triceps", "Tríceps", "3 × 20"],
-    ["HIIT NA ESTEIRA", "https://youtu.be/KTYlVtKOJWo", "cardio", "Cardio", "20 min"],
+    null,
     ["EXTENSORA UNILATERAL", "https://www.youtube.com/watch?v=67qAWE5P8oE", "quadriceps", "Quadríceps", "3 × 10"],
     ["AGACHAMENTO SUMÔ", "https://www.youtube.com/shorts/yXOm6mak7gQ", "composto", "Pernas", "4 × 12"],
     ["STIFF NO SMITH", "https://www.youtube.com/watch?v=lPYndsigmhc", "posterior", "Posteriores", "3 × 12"],
@@ -365,7 +368,7 @@ const gymCatalog = [
     ["PRANCHA", "https://www.youtube.com/shorts/htqqk_uojIs", "core", "Abdômen", "3 × 30 segundos"],
     ["ABDOMINAL OBLÍQUO SOLO", "https://www.youtube.com/shorts/ARcKSp-cVCY", "core", "Abdômen", "3 × 12"],
     ["ABDOMINAL INFRA SOLO", "https://www.youtube.com/shorts/UJvmRQFjD0A", "core", "Abdômen", "3 × 12"]
-].map(([name, video, group, block, meta]) => ({ name, url: video.startsWith('https://') ? video : 'https://www.youtube.com/shorts/' + video, group, block, meta }));
+].map(item => item && (([name, video, group, block, meta]) => ({ name, url: video.startsWith('https://') ? video : 'https://www.youtube.com/shorts/' + video, group, block, meta }))(item));
 const gymTemplates = {
     gymA: { title: 'A · Braços', desc: 'Bíceps, tríceps e ombros de apoio.', slots: ['biceps', 'triceps', 'ombros'], rule: '1 bíceps + 1 tríceps + 1 ombros' },
     gymB: { title: 'B · Pernas', desc: 'Quadríceps, posteriores, glúteos, quadril e panturrilhas.', slots: ['composto', 'posterior', 'quadriceps', 'gluteos', 'quadril', 'panturrilha'], rule: '1 composto + 1 posterior + 1 extensora + 1 glúteos + 1 quadril + 1 panturrilhas' },
@@ -379,15 +382,15 @@ const initialWeek = [
     ] },
     { day: 2, title: 'Terça-Feira', subtitle: 'Superiores completo', items: [
         ['gym-20', '4 × 12'], ['gym-39', '3 × 12'], ['gym-34', '4 × 10'],
-        ['gym-41', '4 × 10'], ['gym-42', '3 × 20'], ['gym-48'], ['gym-43', '20 min']
+        ['gym-41', '4 × 10'], ['gym-42', '3 × 20'], ['gym-48'], ['gym-38', '20 min']
     ] },
     { day: 3, title: 'Quarta-Feira', subtitle: 'Quadríceps + adutor + glúteo', items: [
         ['gym-2', '4 × 8–10'], ['gym-4', '4 × 20/15/12/10'], ['gym-44', '3 × 10'],
-        ['gym-45', '4 × 12'], ['gym-10', '3 × 12'], ['gym-49'], ['gym-50'], ['gym-38', 'Bike moderada']
+        ['gym-0', '4 × 12'], ['gym-10', '3 × 12'], ['gym-49'], ['gym-50'], ['gym-38', 'Bike moderada']
     ] },
     { day: 4, title: 'Quinta-Feira', subtitle: 'Superiores completo', items: [
         ['gym-20', '4 × 12'], ['gym-39', '3 × 12'], ['gym-34', '4 × 10'],
-        ['gym-41', '4 × 10'], ['gym-42', '3 × 20'], ['gym-51'], ['gym-43', '20 min']
+        ['gym-41', '4 × 10'], ['gym-42', '3 × 20'], ['gym-51'], ['gym-38', '20 min']
     ] },
     { day: 5, title: 'Sexta-Feira', subtitle: 'Posterior e glúteos', items: [
         ['gym-12', '4 × 15/12/10/8'], ['gym-46', '3 × 12'], ['gym-25', '3 × 8-8-8'],
@@ -492,7 +495,7 @@ function focusFor(group, name = '') {
 }
 class ExerciseFactory {
     static baseCatalog() {
-        const gym = gymCatalog.map((e, i) => ({ ...e, id: 'gym-' + i, mode: 'gym', focus: focusFor(e.group), name: nameCase(e.name), meta: e.meta || '3 × 12', rest: ['composto', 'supino', 'puxada', 'remada'].includes(e.group) ? 90 : 60, load: '', notes: '' }));
+        const gym = gymCatalog.flatMap((e, i) => e ? [{ ...e, id: 'gym-' + i, mode: 'gym', focus: focusFor(e.group), name: nameCase(e.name), meta: e.meta || '3 × 12', rest: ['composto', 'supino', 'puxada', 'remada'].includes(e.group) ? 90 : 60, load: '', notes: '' }] : []);
         const home = Object.keys(videos).map((name, i) => { const original = Object.values(tabs).flatMap(t => t.cards.flatMap(c => c[1])).find(e => e[0] === name); return { id: 'home-' + i, mode: 'home', focus: focusFor('casa', name), name: nameCase(name), block: FOCUS[focusFor('casa', name)], group: 'casa', url: videos[name].url, meta: repLabel(original?.[1] || '3 × 12'), rest: 60, load: '', notes: '' }; });
         return [...gym, ...home];
     }
@@ -542,7 +545,7 @@ class AppStateFactory {
         catch {
             notice('Não foi possível importar as fichas anteriores');
         }
-        return { version: 2, types, plans, catalog, sessions: [], initialWeekRevision: 1, sundayTrainRevision: 1, initialCatalogRevision: 1, trainproRevision: 1, trainNamesRevision: 1, dayPlans: Object.fromEntries(initialWeek.map(day => [day.day, `week-${day.day}`])) };
+        return { version: 2, types, plans, catalog, sessions: [], initialWeekRevision: 1, sundayTrainRevision: 1, initialCatalogRevision: 1, catalogPolishRevision: 1, trainproRevision: 1, trainNamesRevision: 1, dayPlans: Object.fromEntries(initialWeek.map(day => [day.day, `week-${day.day}`])) };
     }
 }
 function validExercises(items) { return Array.isArray(items) && items.length <= 150 && new Set(items.map(e => e?.id)).size === items.length && items.every(e => e && typeof e.id === 'string' && /^[\w-]{1,100}$/.test(e.id) && ['name', 'block', 'meta', 'load', 'notes', 'url'].every(k => typeof e[k] === 'string' && e[k].length <= 2000) && e.name.trim() && e.meta.trim() && Number.isFinite(e.rest) && e.rest >= 0 && e.rest <= 900 && typeof e.done === 'boolean' && (!e.url || youtubeId(e.url))); }
@@ -661,6 +664,70 @@ function installSundayTrain(state) {
     state.sundayTrainRevision = 1;
     return true;
 }
+function polishCatalogAndPlans(state) {
+    if (state.catalogPolishRevision === 1) return false;
+    const clean = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    const defaults = ExerciseFactory.baseCatalog();
+    const cardioDefault = defaults.find(e => e.id === 'gym-38');
+    const articulatedDefault = defaults.find(e => e.id === 'gym-34');
+    const sumoDefault = defaults.find(e => e.id === 'gym-0');
+    const cardioNames = new Set(['cardio', 'cardio (bike moderada)', 'hiit na esteira', 'simulador de remo']);
+    const isCardioPreset = e => e.mode === 'gym' && (['gym-22', 'gym-38', 'gym-43'].includes(e.id) || ['gym-22', 'gym-38', 'gym-43'].includes(e.presetId) || cardioNames.has(clean(e.name)));
+    let cardio = state.catalog.find(e => e.mode === 'gym' && (e.id === 'gym-38' || e.presetId === 'gym-38'));
+    if (!cardio) cardio = state.catalog.find(e => e.mode === 'gym' && clean(e.name) === 'cardio');
+    if (!cardio) {
+        cardio = { ...cardioDefault };
+        if (state.catalog.some(e => e.id === cardio.id)) cardio.id = uid();
+        state.catalog.push(cardio);
+    }
+    cardio.name = 'Cardio';
+    cardio.focus = 'cardio';
+    cardio.group = 'cardio';
+    cardio.block = 'Cardio';
+    cardio.url ||= cardioDefault.url;
+    if (cardio.id !== 'gym-38') cardio.presetId = 'gym-38';
+    state.catalog = state.catalog.filter(e => e === cardio || !isCardioPreset(e));
+    let articulated = state.catalog.find(e => e.mode === 'gym' && (e.id === 'gym-34' || e.presetId === 'gym-34' || clean(e.name) === 'desenvolvimento articulado'));
+    if (!articulated) {
+        articulated = { ...articulatedDefault };
+        state.catalog.push(articulated);
+    }
+    articulated.url = articulatedDefault.url;
+    const articulatedIds = state.catalog.filter(e => e.mode === 'gym' && (e.id === 'gym-34' || e.presetId === 'gym-34' || clean(e.name) === 'desenvolvimento articulado')).map(e => e.id);
+    state.catalog = state.catalog.filter(e => e === articulated || !articulatedIds.includes(e.id));
+    let sumo = state.catalog.find(e => e.mode === 'gym' && (e.id === 'gym-0' || e.presetId === 'gym-0' || clean(e.name) === 'agachament sumo articulado' || clean(e.name) === 'agachamento sumo articulado'));
+    if (!sumo) {
+        sumo = { ...sumoDefault };
+        state.catalog.push(sumo);
+    }
+    sumo.name = sumoDefault.name;
+    for (const plan of Object.values(state.plans || {})) {
+        for (const e of plan.exercises || []) {
+            if (['gym-22', 'gym-38', 'gym-43'].includes(e.catalogId) || cardioNames.has(clean(e.name))) {
+                e.catalogId = cardio.id;
+                e.name = cardio.name;
+                e.block = cardio.block;
+                e.url = cardio.url;
+            }
+            if (articulatedIds.includes(e.catalogId) || clean(e.name) === 'desenvolvimento articulado') {
+                e.catalogId = articulated.id;
+                e.url = articulated.url;
+            }
+        }
+    }
+    const wednesday = state.types.find(t => t.mode === 'gym' && weekdayFromTrainName(t.title) === 3);
+    const plan = wednesday && state.plans[wednesday.id];
+    if (plan) for (const e of plan.exercises) {
+        if (e.catalogId === 'gym-45' || clean(e.name) === 'agachamento sumo') {
+            e.catalogId = sumo.id;
+            e.name = sumo.name;
+            e.block = sumo.block;
+            e.url = sumo.url;
+        }
+    }
+    state.catalogPolishRevision = 1;
+    return true;
+}
 function linkCatalogVideos(state) {
     for (const [planId, plan] of Object.entries(state.plans || {})) {
         const mode = state.types.find(t => t.id === planId)?.mode || 'gym';
@@ -711,9 +778,10 @@ let app = upgradeTrainPro(loadState());
 const catalogUpdated = syncInitialCatalog(app);
 const initialWeekInstalled = installInitialWeek(app);
 const sundayInstalled = installSundayTrain(app);
+const catalogPolished = polishCatalogAndPlans(app);
 linkCatalogVideos(app);
 const weeklyChecksUpdated = refreshWeeklyChecks();
-if (catalogUpdated || initialWeekInstalled || sundayInstalled || weeklyChecksUpdated) {
+if (catalogUpdated || initialWeekInstalled || sundayInstalled || catalogPolished || weeklyChecksUpdated) {
     try {
         repository.saveApp(app);
     }
@@ -743,6 +811,7 @@ function editingLocked() { if (typeDraft || layoutDraft) {
 const NAV_ALIGN_SELECTED_TO_START = true;
 const navScrollByMode = { gym: 0, home: 0 };
 const lastPlanByMode = { gym: null, home: null };
+const lastNavSelectionByMode = { gym: null, home: null };
 function keepNavScroll() {
     const list = document.getElementById('typeList');
     if (list && !list.classList.contains('isEditing') && list.dataset.mode in navScrollByMode)
@@ -751,18 +820,21 @@ function keepNavScroll() {
 function revealSelectedTrain() {
     const list = document.getElementById('typeList');
     const selected = list?.querySelector('button.tabBtn.active');
-    if (!list || !selected)
-        return;
+    if (!list || !selected) return;
+    const items = [...list.querySelectorAll('.typeChip')];
+    const index = items.findIndex(item => item.contains(selected));
+    const lastId = lastNavSelectionByMode[currentMode];
+    const lastIndex = items.findIndex(item => item.dataset.sortId === lastId);
+    const backward = lastIndex >= 0 && index < lastIndex;
     const bounds = list.getBoundingClientRect(), tab = selected.getBoundingClientRect();
     if (NAV_ALIGN_SELECTED_TO_START) {
-        const target = list.scrollLeft + tab.left - bounds.left - 6;
+        const target = list.scrollLeft + (backward ? tab.right - bounds.right + 6 : tab.left - bounds.left - 6);
         list.scrollTo({ left: Math.max(0, target), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
     } else {
-        if (tab.left < bounds.left)
-            list.scrollLeft += tab.left - bounds.left - 6;
-        else if (tab.right > bounds.right)
-            list.scrollLeft += tab.right - bounds.right + 6;
+        if (tab.left < bounds.left) list.scrollLeft += tab.left - bounds.left - 6;
+        else if (tab.right > bounds.right) list.scrollLeft += tab.right - bounds.right + 6;
     }
+    lastNavSelectionByMode[currentMode] = items[index]?.dataset.sortId || null;
 }
 function weekdayFromTrainName(title) {
     const clean = String(title || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -867,7 +939,7 @@ function planExercises(id) { return layoutDraft?.id === id ? layoutDraft.exercis
 class ExerciseCardView {
     static render(id, e) {
         const editing = layoutDraft?.id === id, trained = !editing && trainedThisWeek(id), steps = Object.entries(how).find(([name]) => nameCase(name) === nameCase(e.name))?.[1];
-        return `<article class="card exerciseCard ${editing ? 'layoutEditing' : ''} ${trained ? 'weekTrained' : ''}" data-sort-id="${e.id}">${editing ? `<button class="removeCard" aria-label="Remover ${esc(nameCase(e.name))}" onclick="removeExercise('${id}','${e.id}')">×</button>` : ''}${editing ? `<div class="cardTop"><button class="dragHandle" data-drag="exercise" data-plan="${id}" data-id="${e.id}" aria-label="Arrastar ${esc(nameCase(e.name))}" title="Arrastar; setas no teclado">⠿</button></div>` : ''}<div class="row"><label><input type="checkbox" ${e.done ? 'checked' : ''} ${editing ? 'disabled' : ''} onchange="toggleExercise('${id}','${e.id}',this.checked)"><span class="ex">${esc(nameCase(e.name))}</span></label></div><div class="cardFields"><label class="field">Séries/Repetições/Tempo<input class="repSelect" type="text" maxlength="120" autocomplete="off" value="${esc(e.meta)}" ${editing ? 'disabled' : ''} onchange="changeReps('${id}','${e.id}',this.value)"></label><label class="field">Carga · kg<input type="text" maxlength="40" autocomplete="off"  value="${esc(e.load)}" ${editing ? 'disabled' : ''} oninput="changeLoad('${id}','${e.id}',this.value)"></label></div>${!editing ? `<div class="exerciseActions">${e.url ? `<button class="watchVideoBtn" onclick="playExercise('${id}','${e.id}')">▶ Assistir vídeo</button>` : '<span></span>'}<button class="editCard" onclick="openPicker('${id}','${e.id}')">Editar</button></div>` : ''}${steps && !editing ? `<details><summary>Como fazer</summary><ol>${steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></details>` : ''}</article>`;
+        return `<article class="card exerciseCard ${editing ? 'layoutEditing' : ''} ${trained ? 'weekTrained' : ''}" data-sort-id="${e.id}">${editing ? `<button class="removeCard" aria-label="Remover ${esc(nameCase(e.name))}" onclick="removeExercise('${id}','${e.id}')">×</button>` : ''}${editing ? `<div class="cardTop"><button class="dragHandle" data-drag="exercise" data-plan="${id}" data-id="${e.id}" aria-label="Arrastar ${esc(nameCase(e.name))}" title="Arrastar; setas no teclado">⠿</button></div>` : ''}<div class="row"><label><input type="checkbox" ${e.done ? 'checked' : ''} ${editing ? 'disabled' : ''} onchange="toggleExercise('${id}','${e.id}',this.checked)"><span class="ex">${esc(nameCase(e.name))}</span></label></div><div class="cardFields"><label class="field">Séries x Repetição<input class="repSelect" type="text" maxlength="120" autocomplete="off" value="${esc(e.meta)}" ${editing ? 'disabled' : ''} onchange="changeReps('${id}','${e.id}',this.value)"></label><label class="field">Carga<input type="text" maxlength="40" autocomplete="off"  value="${esc(e.load)}" ${editing ? 'disabled' : ''} oninput="changeLoad('${id}','${e.id}',this.value)"></label></div>${!editing ? `<div class="exerciseActions">${e.url ? `<button class="watchVideoBtn" onclick="playExercise('${id}','${e.id}')">▶ Assistir vídeo</button>` : '<span></span>'}<button class="editCard" onclick="openPicker('${id}','${e.id}')">Editar</button></div>` : ''}${steps && !editing ? `<details><summary>Como fazer</summary><ol>${steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></details>` : ''}</article>`;
     }
 }
 function renderPlan(id) {
@@ -940,7 +1012,7 @@ function closeDialog(id) { document.getElementById(id).close(); const trigger = 
 function pickerEntries() { const entries = [...app.catalog]; if (pickerInitial && !entries.some(e => e.id === pickerInitial.catalogId))
     entries.push({ ...pickerInitial, id: 'saved-' + pickerInitial.id, focus: focusFor('', pickerInitial.name) }); return entries; }
 function openPicker(id, eid = null) { if (editingLocked())
-    return; pickerPlan = id; pickerEditId = eid; pickerInitial = eid ? clone(app.plans[id].exercises.find(e => e.id === eid)) : null; document.getElementById('pickerTitle').textContent = eid ? 'Editar exercício' : 'Adicionar exercício'; document.getElementById('pickerSubmit').textContent = eid ? 'Salvar' : 'Adicionar'; document.getElementById('pickerPlan').textContent = typeById(id).title; const entry = pickerEntries().find(e => e.id === (pickerInitial?.catalogId || 'saved-' + eid)); document.getElementById('pickerFocus').innerHTML = focusOptions(entry?.focus || 'all', true); document.getElementById('pickerError').textContent = ''; renderPickerOptions(); if (pickerInitial) {
+    return; pickerPlan = id; pickerEditId = eid; pickerInitial = eid ? clone(app.plans[id].exercises.find(e => e.id === eid)) : null; document.getElementById('pickerTitle').textContent = eid ? 'Editar exercício' : 'Adicionar exercício'; document.getElementById('pickerSubmit').textContent = eid ? 'Salvar' : 'Adicionar'; document.getElementById('pickerPlan').textContent = typeById(id).title; const entry = pickerEntries().find(e => e.id === (pickerInitial?.catalogId || 'saved-' + eid)); document.getElementById('pickerFocus').innerHTML = focusOptions(entry?.focus || 'all', true); document.getElementById('pickerError').textContent = ''; document.getElementById('pickerSearch').value = ''; document.getElementById('pickerExercise').innerHTML = ''; renderPickerOptions(); if (pickerInitial) {
     document.getElementById('pickerExercise').value = entry?.id || '';
     document.getElementById('pickerReps').value = pickerInitial.meta;
     document.getElementById('pickerLoad').value = pickerInitial.load;
@@ -949,7 +1021,8 @@ function renderPickerOptions() {
     const focus = document.getElementById('pickerFocus').value || 'all';
     const select = document.getElementById('pickerExercise');
     const previous = select.value;
-    const items = pickerEntries().filter(e => focus === 'all' || e.focus === focus);
+    const term = document.getElementById('pickerSearch').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').trim();
+    const items = pickerEntries().filter(e => (focus === 'all' || e.focus === focus) && e.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').includes(term));
     const groups = new Map();
     for (const entry of items) {
         const key = `${entry.mode === 'home' ? 'Crossfit' : 'Academia'} · ${FOCUS[entry.focus] || 'Geral'}`;
@@ -961,8 +1034,8 @@ function renderPickerOptions() {
         order.indexOf(a.split(' · ')[0]) - order.indexOf(b.split(' · ')[0]) || a.localeCompare(b, 'pt-BR')
     );
     select.innerHTML = options.map(([title, group]) =>
-        `<optgroup label="${esc(title)} · ${group.length}">${group.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(e => `<option value="${esc(e.id)}">${esc(nameCase(e.name))}</option>`).join('')}</optgroup>`
-    ).join('') || '<option value="">Nenhum exercício</option>';
+        `<optgroup label="${esc(title)}">${group.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(e => `<option value="${esc(e.id)}">${esc(nameCase(e.name))}</option>`).join('')}</optgroup>`
+    ).join('') || '<option value="">Nenhum exercício encontrado</option>';
     if (items.some(e => e.id === previous)) select.value = previous;
     document.getElementById('pickerSubmit').disabled = !items.length;
     updatePickerReps();
@@ -1153,7 +1226,7 @@ document.getElementById('finishForm').addEventListener('submit', event => { even
 else
     document.getElementById('finishError').textContent = 'Não foi possível salvar o treino.'; });
 function setCrossfitDefault(value) { const minutes = Math.max(1, Math.min(90, Math.round(Number(value) || 16))); repository.setItem('cfg-crossfitMin', minutes); notice('Duração padrão salva'); renderConfig(); }
-function renderConfig() { document.getElementById('config').innerHTML = `<div class="card"><h2>Configurações · TrainPro</h2><div class="settings"><div class="card"><h2>Crossfit</h2><label class="field">Duração padrão · minutos<input type="number" min="1" max="90" step="1" value="${defaultCrossfitMinutes()}" onchange="setCrossfitDefault(this.value)"></label></div><div class="card"><h2>Importar e exportar</h2><div class="backupRows"><div class="backupRow"><label class="field">Importar<select id="importKind" aria-label="Importar"><option value="trains">Treinos</option><option value="diaries">Diários</option></select></label><button type="button" onclick="document.getElementById('dataImport').click()">Importar arquivo</button></div><div class="backupRow"><label class="field">Exportar<select id="exportKind" aria-label="Exportar"><option value="trains">Treinos</option><option value="diaries">Diários</option></select></label><button type="button" onclick="exportSelected()">Exportar arquivo</button></div><input id="dataImport" type="file" accept=".json,application/json,.csv,text/csv" hidden onchange="importSelected(this.files[0])"></div><p class="meta">Treinos: fichas e exercícios, sem exportar o catálogo completo. Diários: sessões e histórico, sem alterar os treinos.</p></div><div class="card configEditor"><div class="headerTop"><h2>Editor de exercícios</h2><button onclick="openEditor()">+ Novo exercício</button></div><div class="editorGrid"><label class="field">Modalidade<select id="catalogMode" onchange="renderCatalogList()"><option value="gym">Academia</option><option value="home">Crossfit</option></select></label><label class="field">Foco<select id="catalogFocus" onchange="renderCatalogList()">${focusOptions('', true)}</select></label></div><div id="catalogList" class="catalogList"></div></div></div></div>`; renderCatalogList(); }
+function renderConfig() { document.getElementById('config').innerHTML = `<div class="card"><h2>Configurações · TrainPro</h2><div class="settings"><div class="card"><h2>Crossfit</h2><label class="field">Duração padrão · minutos<input type="number" min="1" max="90" step="1" value="${defaultCrossfitMinutes()}" onchange="setCrossfitDefault(this.value)"></label></div><div class="card"><h2>Importar e exportar</h2><div class="backupRows"><div class="backupRow"><label class="field">Importar<select id="importKind" aria-label="Importar"><option value="trains">Treinos</option><option value="diaries">Diários</option></select></label><button type="button" onclick="document.getElementById('dataImport').click()">Importar arquivo</button></div><div class="backupRow"><label class="field">Exportar<select id="exportKind" aria-label="Exportar"><option value="trains">Treinos</option><option value="diaries">Diários</option></select></label><button type="button" onclick="exportSelected()">Exportar arquivo</button></div><input id="dataImport" type="file" accept=".json,application/json,.csv,text/csv" hidden onchange="importSelected(this.files[0])"></div></div><div class="card configEditor"><div class="headerTop"><h2>Editor de exercícios</h2><button onclick="openEditor()">+ Novo exercício</button></div><div class="editorGrid"><label class="field">Modalidade<select id="catalogMode" onchange="renderCatalogList()"><option value="gym">Academia</option><option value="home">Crossfit</option></select></label><label class="field">Foco<select id="catalogFocus" onchange="renderCatalogList()">${focusOptions('', true)}</select></label></div><div id="catalogList" class="catalogList"></div></div></div></div>`; renderCatalogList(); }
 function renderCatalogList() { const mode = document.getElementById('catalogMode').value, focus = document.getElementById('catalogFocus').value || 'all'; document.getElementById('catalogList').innerHTML = app.catalog.filter(c => c.mode === mode && (focus === 'all' || c.focus === focus)).map(c => `<div class="catalogRow"><span>${esc(nameCase(c.name))}<span class="meta">${FOCUS[c.focus]} · ${esc(c.block)} · ${esc(repLabel(c.meta))}${c.load ? ' · ' + esc(loadLabel(c.load)) : ''}${c.url ? ' · ▶ Vídeo cadastrado' : ''}</span></span><button onclick="openEditor('${c.id}')">Editar</button></div>`).join('') || '<p>Nenhum exercício.</p>'; }
 function openEditor(id = null) { catalogEditId = id; const entry = app.catalog.find(c => c.id === id) || { mode: document.getElementById('catalogMode')?.value || 'gym', focus: 'geral', name: '', block: 'Meu treino', meta: '3 × 12', rest: 60, load: '', notes: '', url: '' }; document.getElementById('exerciseForm').reset(); document.getElementById('editorTitle').textContent = id ? 'Editar exercício' : 'Novo exercício'; document.getElementById('editorError').textContent = ''; document.getElementById('editFocus').innerHTML = focusOptions(entry.focus); for (const field of ['name', 'block', 'meta', 'load', 'notes', 'url', 'mode'])
     document.getElementById('edit' + field[0].toUpperCase() + field.slice(1)).value = entry[field]; openDialog('exerciseEditor'); }
