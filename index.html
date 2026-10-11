@@ -191,6 +191,21 @@ body.trainEditing .hero{display:none}
 #trainShell.isEditingTrains .typeTools button{min-height:42px}
 #trainShell.isEditingTrains #typeNav:before{content:'Editar Trains';font-size:22px;font-weight:800;color:var(--text);display:block}
 @media(max-width:600px){#trainShell.isEditingTrains #typeList{grid-template-columns:1fr}#trainShell.isEditingTrains .typeTools{flex-wrap:wrap}#trainShell.isEditingTrains .typeTools button{flex:1}}
+
+#pickerExercise optgroup{font-weight:800;color:#ebbf68;background:#101c30}
+#pickerExercise option{font-weight:500;color:var(--text);background:#15243a}
+.typeChip .tabBtn.isTrained{border-color:#37785a;background:rgba(22,101,75,.16)}
+.typeChip .tabBtn.isTrained.active{border-color:#59a884;background:#203b35}
+@media(max-width:820px){body.alignTrainNav #typeList:not(.isEditing)::after{content:'';flex:0 0 calc(100% - 105px);pointer-events:none}}
+.navTrained{display:inline-flex;align-items:center;gap:3px;font-size:10px;letter-spacing:.04em;font-weight:800;text-transform:uppercase;color:#9fe8c0;margin-top:3px}
+.exerciseCard.weekTrained{border-color:#39745b}
+.exerciseCard.weekTrained::after{content:'✓ TRAINED';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform:rotate(-14deg);font-weight:900;font-size:clamp(30px,3.5vw,56px);letter-spacing:.1em;color:rgba(145,244,190,.14);pointer-events:none;z-index:1;white-space:nowrap;overflow:hidden}
+.workoutSuccess{position:fixed;top:calc(84px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-12px);width:min(390px,calc(100vw - 28px));z-index:90;display:flex;align-items:center;gap:13px;padding:16px 18px;border:1px solid #7da16e;border-radius:16px;background:linear-gradient(135deg,#163b2d,#162d35);color:#f3fff7;box-shadow:0 16px 46px #0008;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .23s ease,transform .23s ease,visibility .23s}
+.workoutSuccess.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.successMark{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border-radius:50%;background:#dcae50;color:#152116;font-size:23px;font-weight:900}
+.successCopy{display:grid;gap:4px;line-height:1.2}.successCopy strong{font-size:15px}.successCopy span{font-size:12px;color:#c5dfd0}
+@media(max-width:600px){.workoutSuccess{top:calc(72px + env(safe-area-inset-top))}.exerciseCard.weekTrained::after{font-size:clamp(27px,8vw,46px)}}
+@media(prefers-reduced-motion:reduce){.workoutSuccess{transition:none}}
 </style>
 </head>
 <body>
@@ -210,6 +225,7 @@ body.trainEditing .hero{display:none}
 </section>
 
 <p id="appStatus" class="status" role="status" aria-live="polite"></p>
+<div id="workoutSuccess" class="workoutSuccess" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="trainShell">
 <div class="tabs modeTabs" aria-label="Modalidade">
 <button id="gymMode" class="active" onclick="setMode('gym')">Academia</button>
@@ -330,13 +346,13 @@ const gymCatalog = [
     ["REMADA LOW ROW", "IJVQq8r7_Hw", "remada", "Costas"],
     ["REMADA ARTICULADA", "c5sQF4q3FRU", "remada", "Costas"],
     ["SUPINO ARTICULADO", "HzrjlCO1o8g", "supino", "Peito"],
-    ["DESENVOLVIMENTO ARTICULADO", "PY-c35VOe7M", "ombros", "Ombros"],
+    ["DESENVOLVIMENTO ARTICULADO", "hpvTsRODIfU", "ombros", "Ombros"],
     ["ABDOMEN MÁQUINA", "o48aSbqv1ss", "core", "Abdômen"],
     ["AGACHAMENTO LIVRE", "https://www.youtube.com/shorts/WpnocUfvfaw", "composto", "Quadríceps", "4 × 20/15/12/10"],
     ["AFUNDO NO SMITH", "https://www.youtube.com/watch?v=sUdDilrlHtM", "composto", "Pernas", "4 × 10"],
     ["CARDIO (BIKE MODERADA)", "https://youtu.be/yvHOkwZVyZo", "cardio", "Cardio", "Bike moderada"],
     ["SUPINO RETO", "https://www.youtube.com/watch?v=72UUJVBuT7o", "supino", "Peito", "3 × 12"],
-    ["DESENVOLVIMENTO", "https://www.youtube.com/shorts/PY-c35VOe7M", "ombros", "Ombros", "4 × 10"],
+    ["DESENVOLVIMENTO", "https://www.youtube.com/shorts/DFXtzdXN_iY", "ombros", "Ombros", "4 × 10"],
     ["ROSCA DIRETA NA POLIA", "https://www.youtube.com/watch?v=HJ8NvI8EbPs", "biceps", "Bíceps", "4 × 10"],
     ["TRÍCEPS CORDA", "https://www.youtube.com/shorts/wr2O31uVJWs", "triceps", "Tríceps", "3 × 20"],
     ["HIIT NA ESTEIRA", "https://youtu.be/KTYlVtKOJWo", "cardio", "Cardio", "20 min"],
@@ -377,7 +393,8 @@ const initialWeek = [
         ['gym-12', '4 × 15/12/10/8'], ['gym-46', '3 × 12'], ['gym-25', '3 × 8-8-8'],
         ['gym-7', '3 × 12'], ['gym-6', '3 × 12'], ['gym-52'], ['gym-38', 'Bike moderada']
     ] },
-    { day: 6, title: 'Sábado', subtitle: 'Geral', items: [['gym-28']] }
+    { day: 6, title: 'Sábado', subtitle: 'Geral', items: [['gym-28']] },
+    { day: 0, title: 'Domingo', subtitle: '', items: [] }
 ];
 
 const STATE_KEY = 'meu-treino-v2', LEGACY_KEY = 'meu-treino-planos-v1';
@@ -525,7 +542,7 @@ class AppStateFactory {
         catch {
             notice('Não foi possível importar as fichas anteriores');
         }
-        return { version: 2, types, plans, catalog, sessions: [], initialWeekRevision: 1, initialCatalogRevision: 1, trainproRevision: 1, trainNamesRevision: 1, dayPlans: Object.fromEntries(initialWeek.map(day => [day.day, `week-${day.day}`])) };
+        return { version: 2, types, plans, catalog, sessions: [], initialWeekRevision: 1, sundayTrainRevision: 1, initialCatalogRevision: 1, trainproRevision: 1, trainNamesRevision: 1, dayPlans: Object.fromEntries(initialWeek.map(day => [day.day, `week-${day.day}`])) };
     }
 }
 function validExercises(items) { return Array.isArray(items) && items.length <= 150 && new Set(items.map(e => e?.id)).size === items.length && items.every(e => e && typeof e.id === 'string' && /^[\w-]{1,100}$/.test(e.id) && ['name', 'block', 'meta', 'load', 'notes', 'url'].every(k => typeof e[k] === 'string' && e[k].length <= 2000) && e.name.trim() && e.meta.trim() && Number.isFinite(e.rest) && e.rest >= 0 && e.rest <= 900 && typeof e.done === 'boolean' && (!e.url || youtubeId(e.url))); }
@@ -627,6 +644,23 @@ function installInitialWeek(state) {
     state.initialWeekRevision = 1;
     return true;
 }
+function installSundayTrain(state) {
+    if (state.sundayTrainRevision === 1) return false;
+    const existing = state.types.find(t => t.mode === 'gym' && weekdayFromTrainName(t.title) === 0);
+    if (existing) {
+        state.dayPlans ||= {};
+        if (!state.dayPlans[0]) state.dayPlans[0] = existing.id;
+    } else {
+        const id = state.types.some(t => t.id === 'week-0') ? uid() : 'week-0';
+        const lastGym = state.types.map(t => t.mode).lastIndexOf('gym');
+        state.types.splice(lastGym + 1, 0, { id, title: 'Domingo', subtitle: '', mode: 'gym', template: null });
+        state.plans[id] = { exercises: [], checkDate: dateKey(), checkWeek: weekKey() };
+        state.dayPlans ||= {};
+        state.dayPlans[0] = id;
+    }
+    state.sundayTrainRevision = 1;
+    return true;
+}
 function linkCatalogVideos(state) {
     for (const [planId, plan] of Object.entries(state.plans || {})) {
         const mode = state.types.find(t => t.id === planId)?.mode || 'gym';
@@ -639,17 +673,47 @@ function linkCatalogVideos(state) {
         }
     }
 }
+
+function trainedThisWeek(id) {
+    return !!app.weeklyTrained?.[weekKey()]?.[id];
+}
+function setTrainedThisWeek(id, trained) {
+    app.weeklyTrained ||= {};
+    const record = app.weeklyTrained[weekKey()] ||= {};
+    if (trained) record[id] = true;
+    else delete record[id];
+}
+function refreshWeeklyChecks() {
+    const week = weekKey(), today = dateKey();
+    let updated = false;
+    for (const [id, plan] of Object.entries(app.plans)) {
+        if (plan.checkWeek === week) continue;
+        if (plan.checkWeek || plan.checkDate !== today) plan.exercises.forEach(e => e.done = false);
+        plan.checkWeek = week;
+        plan.checkDate = today;
+        if (plan.exercises.length && plan.exercises.every(e => e.done)) setTrainedThisWeek(id, true);
+        updated = true;
+    }
+    return updated;
+}
+let workoutSuccessTimer;
+function showWorkoutSuccess() {
+    const popup = document.getElementById('workoutSuccess');
+    clearTimeout(workoutSuccessTimer);
+    popup.classList.remove('show');
+    popup.innerHTML = '<span class="successMark" aria-hidden="true">✓</span><span class="successCopy"><strong>Treino concluído! Parabéns</strong><span>Bom trabalho, continue assim 💪</span></span>';
+    void popup.offsetWidth;
+    popup.classList.add('show');
+    workoutSuccessTimer = setTimeout(() => popup.classList.remove('show'), 3000);
+}
+
 let app = upgradeTrainPro(loadState());
 const catalogUpdated = syncInitialCatalog(app);
 const initialWeekInstalled = installInitialWeek(app);
+const sundayInstalled = installSundayTrain(app);
 linkCatalogVideos(app);
-for (const p of Object.values(app.plans)) {
-    if (p.checkDate !== dateKey()) {
-        p.exercises.forEach(e => e.done = false);
-        p.checkDate = dateKey();
-    }
-}
-if (catalogUpdated || initialWeekInstalled) {
+const weeklyChecksUpdated = refreshWeeklyChecks();
+if (catalogUpdated || initialWeekInstalled || sundayInstalled || weeklyChecksUpdated) {
     try {
         repository.saveApp(app);
     }
@@ -676,7 +740,9 @@ function editingLocked() { if (typeDraft || layoutDraft) {
     notice('Salve ou cancele a edição antes de sair');
     return true;
 } return false; }
+const NAV_ALIGN_SELECTED_TO_START = true;
 const navScrollByMode = { gym: 0, home: 0 };
+const lastPlanByMode = { gym: null, home: null };
 function keepNavScroll() {
     const list = document.getElementById('typeList');
     if (list && !list.classList.contains('isEditing') && list.dataset.mode in navScrollByMode)
@@ -688,10 +754,15 @@ function revealSelectedTrain() {
     if (!list || !selected)
         return;
     const bounds = list.getBoundingClientRect(), tab = selected.getBoundingClientRect();
-    if (tab.left < bounds.left)
-        list.scrollLeft += tab.left - bounds.left - 6;
-    else if (tab.right > bounds.right)
-        list.scrollLeft += tab.right - bounds.right + 6;
+    if (NAV_ALIGN_SELECTED_TO_START) {
+        const target = list.scrollLeft + tab.left - bounds.left - 6;
+        list.scrollTo({ left: Math.max(0, target), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    } else {
+        if (tab.left < bounds.left)
+            list.scrollLeft += tab.left - bounds.left - 6;
+        else if (tab.right > bounds.right)
+            list.scrollLeft += tab.right - bounds.right + 6;
+    }
 }
 function weekdayFromTrainName(title) {
     const clean = String(title || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -707,9 +778,10 @@ function todayTrain(mode) {
     return app.types.find(t => t.mode === mode && weekdayFromTrainName(t.title) === dow) || null;
 }
 function renderNav() {
+    document.body.classList.toggle('alignTrainNav', NAV_ALIGN_SELECTED_TO_START);
     keepNavScroll();
     const editing = !!typeDraft, types = (typeDraft || app.types).filter(t => t.mode === currentMode);
-    document.getElementById('typeNav').innerHTML = `<div id="typeList" data-mode="${currentMode}" class="typeList ${editing ? 'isEditing' : ''}" aria-label="Trains de ${modeLabel(currentMode)}">${types.map(t => editing ? `<div class="typeChip editing" data-sort-id="${t.id}"><button class="dragHandle" type="button" data-drag="type" data-id="${t.id}" aria-label="Arrastar ${esc(t.title)}" title="Arrastar; setas no teclado">⠿</button><div class="typeEditFields"><input aria-label="Nome do treino" placeholder="Nome: A, B, Segunda-Feira..." maxlength="80" value="${esc(t.title)}" oninput="renameType('${t.id}',this.value,'title')"><input aria-label="Tipo do treino" placeholder="Tipo: Posterior e Glúteos..." maxlength="120" value="${esc(t.subtitle || '')}" oninput="renameType('${t.id}',this.value,'subtitle')"></div><button class="deleteType" aria-label="Remover Train ${esc(t.title)}" onclick="deleteType('${t.id}')">×</button></div>` : `<div class="typeChip" data-sort-id="${t.id}"><button class="tabBtn ${activeView === 'workout' && t.id === currentPlan ? 'active' : ''}" onclick="showTab('${t.id}',this)"><span>${esc(t.title)}</span>${t.subtitle ? `<small class="navType">${esc(t.subtitle)}</small>` : ''}</button></div>`).join('')}</div><div class="typeTools">${editing ? '<button onclick="addType()">+ Train</button>' + '<button class="primary" onclick="saveTypes()">Salvar</button><button onclick="cancelTypes()">Cancelar</button>' : '<button class="layoutBtn" onclick="editTypes()">' + layoutIcon + ' Trains</button>'}</div>`;
+    document.getElementById('typeNav').innerHTML = `<div id="typeList" data-mode="${currentMode}" class="typeList ${editing ? 'isEditing' : ''}" aria-label="Trains de ${modeLabel(currentMode)}">${types.map(t => editing ? `<div class="typeChip editing" data-sort-id="${t.id}"><button class="dragHandle" type="button" data-drag="type" data-id="${t.id}" aria-label="Arrastar ${esc(t.title)}" title="Arrastar; setas no teclado">⠿</button><div class="typeEditFields"><input aria-label="Nome do treino" placeholder="Nome: A, B, Segunda-Feira..." maxlength="80" value="${esc(t.title)}" oninput="renameType('${t.id}',this.value,'title')"><input aria-label="Tipo do treino" placeholder="Tipo: Posterior e Glúteos..." maxlength="120" value="${esc(t.subtitle || '')}" oninput="renameType('${t.id}',this.value,'subtitle')"></div><button class="deleteType" aria-label="Remover Train ${esc(t.title)}" onclick="deleteType('${t.id}')">×</button></div>` : `<div class="typeChip" data-sort-id="${t.id}"><button class="tabBtn ${activeView === 'workout' && t.id === currentPlan ? 'active' : ''} ${trainedThisWeek(t.id) ? 'isTrained' : ''}" onclick="showTab('${t.id}',this)"><span>${esc(t.title)}</span>${t.subtitle ? `<small class="navType">${esc(t.subtitle)}</small>` : ''}${trainedThisWeek(t.id) ? '<small class="navTrained">✓ Trained</small>' : ''}</button></div>`).join('')}</div><div class="typeTools">${editing ? '<button onclick="addType()">+ Train</button>' + '<button class="primary" onclick="saveTypes()">Salvar</button><button onclick="cancelTypes()">Cancelar</button>' : '<button class="layoutBtn" onclick="editTypes()">' + layoutIcon + ' Trains</button>'}</div>`;
     const list = document.getElementById('typeList');
     if (list && !editing) {
         list.scrollLeft = navScrollByMode[currentMode] || 0;
@@ -766,7 +838,7 @@ function cancelTypes() { typeDraft = null; renderNav(); }
 function renderWorkouts() { document.getElementById('workouts').innerHTML = app.types.map(t => `<section id="${t.id}" class="tab grid workoutTab hidden"></section>`).join(''); for (const t of app.types)
     renderPlan(t.id); }
 function setMode(mode) { if (editingLocked())
-    return; keepNavScroll(); currentMode = mode; document.getElementById('gymMode').classList.toggle('active', mode === 'gym'); document.getElementById('homeMode').classList.toggle('active', mode === 'home'); document.getElementById('trainShell').classList.remove('hidden'); const type = todayTrain(mode) || app.types.find(t => t.id === currentPlan && t.mode === mode) || app.types.find(t => t.mode === mode); if (type)
+    return; if (refreshWeeklyChecks()) repository.saveApp(app); keepNavScroll(); const previousMode = currentMode; currentMode = mode; document.getElementById('gymMode').classList.toggle('active', mode === 'gym'); document.getElementById('homeMode').classList.toggle('active', mode === 'home'); document.getElementById('trainShell').classList.remove('hidden'); const returningFromCrossfit = previousMode === 'home' && mode === 'gym'; const type = (returningFromCrossfit ? app.types.find(t => t.id === lastPlanByMode.gym && t.mode === 'gym') : todayTrain(mode)) || app.types.find(t => t.id === currentPlan && t.mode === mode) || app.types.find(t => t.id === lastPlanByMode[mode] && t.mode === mode) || app.types.find(t => t.mode === mode); if (type)
     showTab(type.id);
 else {
     activeView = 'workout';
@@ -776,8 +848,9 @@ else {
     notice('Use Trains para criar um treino');
 } }
 function showTab(id, btn) { if (editingLocked())
-    return; document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden')); document.getElementById(id)?.classList.remove('hidden'); const t = typeById(id); document.getElementById('trainShell').classList.toggle('hidden', !t); if (t) {
+    return; if (refreshWeeklyChecks()) repository.saveApp(app); document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden')); document.getElementById(id)?.classList.remove('hidden'); const t = typeById(id); document.getElementById('trainShell').classList.toggle('hidden', !t); if (t) {
     currentPlan = id;
+    lastPlanByMode[t.mode] = id;
     activeView = 'workout';
     renderPlan(id);
 }
@@ -793,8 +866,8 @@ else {
 function planExercises(id) { return layoutDraft?.id === id ? layoutDraft.exercises : app.plans[id].exercises; }
 class ExerciseCardView {
     static render(id, e) {
-        const editing = layoutDraft?.id === id, steps = Object.entries(how).find(([name]) => nameCase(name) === nameCase(e.name))?.[1];
-        return `<article class="card exerciseCard ${editing ? 'layoutEditing' : ''}" data-sort-id="${e.id}">${editing ? `<button class="removeCard" aria-label="Remover ${esc(nameCase(e.name))}" onclick="removeExercise('${id}','${e.id}')">×</button>` : ''}${editing ? `<div class="cardTop"><button class="dragHandle" data-drag="exercise" data-plan="${id}" data-id="${e.id}" aria-label="Arrastar ${esc(nameCase(e.name))}" title="Arrastar; setas no teclado">⠿</button></div>` : ''}<div class="row"><label><input type="checkbox" ${e.done ? 'checked' : ''} ${editing ? 'disabled' : ''} onchange="toggleExercise('${id}','${e.id}',this.checked)"><span class="ex">${esc(nameCase(e.name))}</span></label></div><div class="cardFields"><label class="field">Séries/Repetições/Tempo<input class="repSelect" type="text" maxlength="120" autocomplete="off" value="${esc(e.meta)}" ${editing ? 'disabled' : ''} onchange="changeReps('${id}','${e.id}',this.value)"></label><label class="field">Carga · kg<input type="text" maxlength="40" autocomplete="off"  value="${esc(e.load)}" ${editing ? 'disabled' : ''} oninput="changeLoad('${id}','${e.id}',this.value)"></label></div>${!editing ? `<div class="exerciseActions">${e.url ? `<button class="watchVideoBtn" onclick="playExercise('${id}','${e.id}')">▶ Assistir vídeo</button>` : '<span></span>'}<button class="editCard" onclick="openPicker('${id}','${e.id}')">Editar</button></div>` : ''}${steps && !editing ? `<details><summary>Como fazer</summary><ol>${steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></details>` : ''}</article>`;
+        const editing = layoutDraft?.id === id, trained = !editing && trainedThisWeek(id), steps = Object.entries(how).find(([name]) => nameCase(name) === nameCase(e.name))?.[1];
+        return `<article class="card exerciseCard ${editing ? 'layoutEditing' : ''} ${trained ? 'weekTrained' : ''}" data-sort-id="${e.id}">${editing ? `<button class="removeCard" aria-label="Remover ${esc(nameCase(e.name))}" onclick="removeExercise('${id}','${e.id}')">×</button>` : ''}${editing ? `<div class="cardTop"><button class="dragHandle" data-drag="exercise" data-plan="${id}" data-id="${e.id}" aria-label="Arrastar ${esc(nameCase(e.name))}" title="Arrastar; setas no teclado">⠿</button></div>` : ''}<div class="row"><label><input type="checkbox" ${e.done ? 'checked' : ''} ${editing ? 'disabled' : ''} onchange="toggleExercise('${id}','${e.id}',this.checked)"><span class="ex">${esc(nameCase(e.name))}</span></label></div><div class="cardFields"><label class="field">Séries/Repetições/Tempo<input class="repSelect" type="text" maxlength="120" autocomplete="off" value="${esc(e.meta)}" ${editing ? 'disabled' : ''} onchange="changeReps('${id}','${e.id}',this.value)"></label><label class="field">Carga · kg<input type="text" maxlength="40" autocomplete="off"  value="${esc(e.load)}" ${editing ? 'disabled' : ''} oninput="changeLoad('${id}','${e.id}',this.value)"></label></div>${!editing ? `<div class="exerciseActions">${e.url ? `<button class="watchVideoBtn" onclick="playExercise('${id}','${e.id}')">▶ Assistir vídeo</button>` : '<span></span>'}<button class="editCard" onclick="openPicker('${id}','${e.id}')">Editar</button></div>` : ''}${steps && !editing ? `<details><summary>Como fazer</summary><ol>${steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></details>` : ''}</article>`;
     }
 }
 function renderPlan(id) {
@@ -824,11 +897,30 @@ function cancelLayout() { if (!layoutDraft)
     return; const id = layoutDraft.id; layoutDraft = null; renderPlan(id); }
 function removeExercise(id, eid) { if (layoutDraft?.id !== id)
     return; layoutDraft.exercises = layoutDraft.exercises.filter(e => e.id !== eid); renderPlan(id); }
-function toggleExercise(id, eid, checked) { new PlanEditCommand(id, p => { p.exercises.find(e => e.id === eid).done = checked; p.checkDate = dateKey(); }, { message: '' }).execute(); }
+function toggleExercise(id, eid, checked) {
+    refreshWeeklyChecks();
+    const plan = app.plans[id], exercise = plan?.exercises.find(e => e.id === eid);
+    if (!exercise) return;
+    const previous = exercise.done, wasTrained = trainedThisWeek(id);
+    exercise.done = checked;
+    plan.checkDate = dateKey();
+    plan.checkWeek = weekKey();
+    const allDone = plan.exercises.length > 0 && plan.exercises.every(e => e.done);
+    if (!checked) setTrainedThisWeek(id, false);
+    else if (allDone) setTrainedThisWeek(id, true);
+    if (!persist('')) {
+        exercise.done = previous;
+        setTrainedThisWeek(id, wasTrained);
+        return;
+    }
+    renderPlan(id);
+    if (wasTrained !== trainedThisWeek(id)) renderNav();
+    if (!wasTrained && trainedThisWeek(id)) showWorkoutSuccess();
+}
 function changeReps(id, eid, value) { const meta = String(value).trim(); if (!meta) { renderPlan(id); notice('Informe séries, repetições ou tempo'); return; } new PlanEditCommand(id, p => { p.exercises.find(e => e.id === eid).meta = meta; }, { remember: true }).execute(); }
 function changeLoad(id, eid, value) { new PlanEditCommand(id, p => { p.exercises.find(e => e.id === eid).load = String(value).slice(0, 40); }, { message: '' }).execute(); }
 function resetChecks() { if (!currentPlan || typeById(currentPlan)?.mode !== 'home' || layoutDraft)
-    return; rememberPlan(currentPlan); app.plans[currentPlan].exercises.forEach(e => e.done = false); persist(); renderPlan(currentPlan); }
+    return; rememberPlan(currentPlan); app.plans[currentPlan].exercises.forEach(e => e.done = false); setTrainedThisWeek(currentPlan, false); persist(''); renderPlan(currentPlan); renderNav(); }
 function randomizePlan(id) { if (editingLocked())
     return; const t = typeById(id), template = gymTemplates[t.template]; if (!template)
     return; if (app.plans[id].exercises.length && !confirm('Substituir os exercícios deste Train?'))
@@ -845,15 +937,36 @@ function randomizePlan(id) { if (editingLocked())
 function openDialog(id) { dialogTriggers.set(id, document.activeElement); document.getElementById(id).showModal(); }
 function closeDialog(id) { document.getElementById(id).close(); const trigger = dialogTriggers.get(id); if (trigger?.isConnected)
     trigger.focus(); }
-function pickerEntries() { const entries = app.catalog.filter(e => e.mode === typeById(pickerPlan).mode); if (pickerInitial && !entries.some(e => e.id === pickerInitial.catalogId))
+function pickerEntries() { const entries = [...app.catalog]; if (pickerInitial && !entries.some(e => e.id === pickerInitial.catalogId))
     entries.push({ ...pickerInitial, id: 'saved-' + pickerInitial.id, focus: focusFor('', pickerInitial.name) }); return entries; }
 function openPicker(id, eid = null) { if (editingLocked())
-    return; pickerPlan = id; pickerEditId = eid; pickerInitial = eid ? clone(app.plans[id].exercises.find(e => e.id === eid)) : null; document.getElementById('pickerTitle').textContent = eid ? 'Editar exercício' : 'Adicionar exercício'; document.getElementById('pickerSubmit').textContent = eid ? 'Salvar' : 'Adicionar'; document.getElementById('pickerPlan').textContent = typeById(id).title; const entry = pickerEntries().find(e => e.id === (pickerInitial?.catalogId || 'saved-' + eid)); document.getElementById('pickerFocus').innerHTML = focusOptions(entry?.focus || '', true); document.getElementById('pickerError').textContent = ''; renderPickerOptions(); if (pickerInitial) {
+    return; pickerPlan = id; pickerEditId = eid; pickerInitial = eid ? clone(app.plans[id].exercises.find(e => e.id === eid)) : null; document.getElementById('pickerTitle').textContent = eid ? 'Editar exercício' : 'Adicionar exercício'; document.getElementById('pickerSubmit').textContent = eid ? 'Salvar' : 'Adicionar'; document.getElementById('pickerPlan').textContent = typeById(id).title; const entry = pickerEntries().find(e => e.id === (pickerInitial?.catalogId || 'saved-' + eid)); document.getElementById('pickerFocus').innerHTML = focusOptions(entry?.focus || 'all', true); document.getElementById('pickerError').textContent = ''; renderPickerOptions(); if (pickerInitial) {
     document.getElementById('pickerExercise').value = entry?.id || '';
     document.getElementById('pickerReps').value = pickerInitial.meta;
     document.getElementById('pickerLoad').value = pickerInitial.load;
 } openDialog('exercisePicker'); }
-function renderPickerOptions() { const focus = document.getElementById('pickerFocus').value || 'all', items = pickerEntries().filter(e => focus === 'all' || e.focus === focus); document.getElementById('pickerExercise').innerHTML = items.map(e => `<option value="${e.id}">${esc(nameCase(e.name))}</option>`).join('') || '<option value="">Nenhum exercício</option>'; document.getElementById('pickerSubmit').disabled = !items.length; updatePickerReps(); }
+function renderPickerOptions() {
+    const focus = document.getElementById('pickerFocus').value || 'all';
+    const select = document.getElementById('pickerExercise');
+    const previous = select.value;
+    const items = pickerEntries().filter(e => focus === 'all' || e.focus === focus);
+    const groups = new Map();
+    for (const entry of items) {
+        const key = `${entry.mode === 'home' ? 'Crossfit' : 'Academia'} · ${FOCUS[entry.focus] || 'Geral'}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(entry);
+    }
+    const order = ['Academia', 'Crossfit'];
+    const options = [...groups.entries()].sort(([a], [b]) =>
+        order.indexOf(a.split(' · ')[0]) - order.indexOf(b.split(' · ')[0]) || a.localeCompare(b, 'pt-BR')
+    );
+    select.innerHTML = options.map(([title, group]) =>
+        `<optgroup label="${esc(title)} · ${group.length}">${group.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(e => `<option value="${esc(e.id)}">${esc(nameCase(e.name))}</option>`).join('')}</optgroup>`
+    ).join('') || '<option value="">Nenhum exercício</option>';
+    if (items.some(e => e.id === previous)) select.value = previous;
+    document.getElementById('pickerSubmit').disabled = !items.length;
+    updatePickerReps();
+}
 function updatePickerReps() { const entry = pickerEntries().find(e => e.id === document.getElementById('pickerExercise').value); document.getElementById('pickerReps').value = entry?.meta || ''; document.getElementById('pickerLoad').value = entry?.load || ''; }
 document.getElementById('pickerForm').addEventListener('submit', event => { event.preventDefault(); const entry = pickerEntries().find(e => e.id === document.getElementById('pickerExercise').value), p = app.plans[pickerPlan]; if (!entry || !p)
     return; if (!pickerEditId && p.exercises.length >= 150) {
@@ -979,8 +1092,20 @@ function tickCrossfit() { let finished = false; for (const t of app.types.filter
     }
 } if (finished)
     persist('Tempo do Crossfit concluído.'); syncCrossfitLabels(); }
+function scheduledWorkoutDate(type) {
+    if (type.mode !== 'gym') return dateKey();
+    const currentWeek = weekKey();
+    const assigned = [1, 2, 3, 4, 5, 6, 0].find(day => repository.getItem(`${currentWeek}-workout-${day}`) === 'type:' + type.id);
+    const namedDay = weekdayFromTrainName(type.title);
+    const mapped = [1, 2, 3, 4, 5, 6, 0].find(day => app.dayPlans?.[day] === type.id && !repository.getItem(`${currentWeek}-workout-${day}`));
+    const day = assigned ?? (namedDay >= 0 ? namedDay : mapped);
+    if (day === undefined) return dateKey();
+    const target = startOfWeek(new Date());
+    target.setDate(target.getDate() + (day === 0 ? 6 : day - 1));
+    return dateKey(target);
+}
 function openFinish(id) { finishPlanId = id; const t = typeById(id), list = app.plans[id].exercises; if (!list.length)
-    return; document.getElementById('finishPlan').textContent = t.title + ' · ' + modeLabel(t.mode) + ' · ' + fmtFull(new Date()); document.getElementById('finishCrossfit').classList.toggle('hidden', t.mode !== 'home'); if (t.mode === 'home') {
+    return; document.getElementById('finishPlan').textContent = t.title + ' · ' + modeLabel(t.mode) + ' · ' + fmtFull(new Date(scheduledWorkoutDate(t) + 'T12:00:00')); document.getElementById('finishCrossfit').classList.toggle('hidden', t.mode !== 'home'); if (t.mode === 'home') {
     pauseCrossfit(id);
     const c = crossfitClock(id);
     document.getElementById('finishRounds').value = c.rounds;
@@ -988,21 +1113,43 @@ function openFinish(id) { finishPlanId = id; const t = typeById(id), list = app.
     persist('');
     syncCrossfitLabels();
 } const hasChecks = list.some(e => e.done); document.getElementById('finishExercises').innerHTML = list.map(e => `<label class="finishItem"><input type="checkbox" value="${e.id}" ${!hasChecks || e.done ? 'checked' : ''}><span>${esc(nameCase(e.name))}<span class="meta">${esc(repLabel(e.meta))}${e.load ? ' · ' + esc(loadLabel(e.load)) : ''}</span></span></label>`).join(''); document.getElementById('finishError').textContent = ''; openDialog('finishDialog'); }
-function completeWorkout(id, selectedIds, crossfit = {}) { const p = app.plans[id], type = typeById(id), selected = p.exercises.filter(e => selectedIds.includes(e.id)); if (!selected.length)
-    return false; const previous = clone(app), date = dateKey(), key = date + '-' + id; const session = { id: key, date, planId: id, title: type.title, mode: type.mode, finishedAt: new Date().toISOString(), exercises: clone(selected).map(e => ({ ...e, done: true })) }; if (type.mode === 'home') {
-    const c = crossfitClock(id);
-    session.rounds = Math.max(0, Math.min(9999, Math.floor(Number(crossfit.rounds ?? c.rounds) || 0)));
-    session.durationSec = Math.max(0, Math.min(18000, Number(crossfit.durationSec ?? elapsedCrossfit(c) / 1000) || 0));
-    pauseCrossfit(id);
-} app.sessions = app.sessions.filter(s => s.id !== key); app.sessions.push(session); p.checkDate = date; p.exercises.forEach(e => e.done = selectedIds.includes(e.id)); if (!persist('Treino salvo no diário.')) {
-    app = previous;
-    return false;
-} renderPlan(id); renderDiario(); return true; }
+function completeWorkout(id, selectedIds, crossfit = {}) {
+    const p = app.plans[id], type = typeById(id), selected = p.exercises.filter(e => selectedIds.includes(e.id));
+    if (!selected.length) return false;
+    const previous = clone(app), date = scheduledWorkoutDate(type), key = date + '-' + id;
+    const previousSessions = app.sessions.filter(s => s.planId === id && (s.id === key || (type.mode === 'gym' && weekKeyFromDate(new Date(s.date + 'T12:00:00')) === weekKey())));
+    const completedExercises = new Map();
+    for (const previousSession of previousSessions)
+        for (const exercise of previousSession.exercises || []) completedExercises.set(exercise.id || exercise.name, exercise);
+    for (const exercise of selected) completedExercises.set(exercise.id || exercise.name, { ...clone(exercise), done: true });
+    const session = { id: key, date, planId: id, title: type.title, mode: type.mode, finishedAt: new Date().toISOString(), exercises: [...completedExercises.values()] };
+    if (type.mode === 'home') {
+        const c = crossfitClock(id);
+        session.rounds = Math.max(0, Math.min(9999, Math.floor(Number(crossfit.rounds ?? c.rounds) || 0)));
+        session.durationSec = Math.max(0, Math.min(18000, Number(crossfit.durationSec ?? elapsedCrossfit(c) / 1000) || 0));
+        pauseCrossfit(id);
+    }
+    const previousIds = new Set(previousSessions.map(s => s.id));
+    app.sessions = app.sessions.filter(s => !previousIds.has(s.id));
+    app.sessions.push(session);
+    p.checkDate = dateKey();
+    p.checkWeek = weekKey();
+    const completedIds = new Set(session.exercises.map(e => e.id));
+    p.exercises.forEach(e => e.done = completedIds.has(e.id));
+    setTrainedThisWeek(id, true);
+    if (!persist('')) { app = previous; return false; }
+    renderPlan(id);
+    renderNav();
+    renderDiario();
+    return true;
+}
 document.getElementById('finishForm').addEventListener('submit', event => { event.preventDefault(); const selected = [...document.querySelectorAll('#finishExercises input:checked')].map(i => i.value); if (!selected.length) {
     document.getElementById('finishError').textContent = 'Selecione os exercícios realizados.';
     return;
-} const crossfit = { rounds: Number(document.getElementById('finishRounds').value), durationSec: Number(document.getElementById('finishMinutes').value) * 60 }; if (completeWorkout(finishPlanId, selected, crossfit))
+} const crossfit = { rounds: Number(document.getElementById('finishRounds').value), durationSec: Number(document.getElementById('finishMinutes').value) * 60 }; if (completeWorkout(finishPlanId, selected, crossfit)) {
     closeDialog('finishDialog');
+    showWorkoutSuccess();
+}
 else
     document.getElementById('finishError').textContent = 'Não foi possível salvar o treino.'; });
 function setCrossfitDefault(value) { const minutes = Math.max(1, Math.min(90, Math.round(Number(value) || 16))); repository.setItem('cfg-crossfitMin', minutes); notice('Duração padrão salva'); renderConfig(); }
