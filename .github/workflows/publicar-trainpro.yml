@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'new.zip'
       - 'TrainPro_V2_PRONTO_PARA_PAGES*.zip'
       - '.github/workflows/publicar-trainpro.yml'
   workflow_dispatch:
@@ -31,7 +32,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p _site
-          ZIP=$(find . -maxdepth 1 -type f -name 'TrainPro_V2_PRONTO_PARA_PAGES*.zip' -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)
+          ZIP='./new.zip'
+          if [ ! -f "$ZIP" ]; then
+            ZIP=$(find . -maxdepth 1 -type f -name 'TrainPro_V2_PRONTO_PARA_PAGES*.zip' -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)
+          fi
           test -n "$ZIP"
           echo "Publicando: $ZIP"
           unzip -q "$ZIP" -d _site
