@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#08111f"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <title>TrainPro</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/jpeg" href="./logo.jpg">
 <style>
 :root{--bg:#08111f;--card:#111c33;--card2:#162541;--text:#eef4ff;--muted:#aab7d0;--line:#2b3b5f;--gold:#d6a84f;--blue:#60a5fa;--red:#dc2626}
 *{box-sizing:border-box}
@@ -209,19 +209,35 @@ body.alignTrainNav #typeList:not(.isEditing){scroll-snap-type:none}
 @media(max-width:600px){.workoutSuccess{top:calc(72px + env(safe-area-inset-top))}.exerciseCard.weekTrained::after{font-size:clamp(27px,8vw,46px)}}
 @media(prefers-reduced-motion:reduce){.workoutSuccess{transition:none}}
 </style>
+<style>
+.bodySetup{margin:0 0 16px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.bodySetup summary{font-size:14px}.bodySummary{font-size:12px;margin-top:8px}
+.bodyFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
+.measurementActions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:12px}
+.weekSummary{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:12px 0 16px}
+.weeklyWeight{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin:0}.weeklyWeight .field{flex:0 1 170px;font-size:12px}
+.weeklyWeight button{min-height:42px}.weeklyWeight .formError{flex-basis:100%;margin:0}.weeklyWeight .removeWeight{background:transparent;color:var(--muted);font-size:12px}
+@media(max-width:600px){.bodyFields{grid-template-columns:1fr}.weekSummary{align-items:flex-start}.weeklyWeight{width:100%}.weeklyWeight .field{flex:1;min-width:130px}.measurementActions button{min-height:44px}}
+</style>
+<style>
+.brandLogo{display:block;width:144px;height:auto;border-radius:10px}
+.heroBtn.configBtn{justify-content:center;min-width:42px;min-height:42px;padding:9px 12px}.configBtn svg{display:block;width:20px;height:20px;flex:none}
+.weightLegend{margin:10px 0}.weightChange{display:block;margin-top:4px;color:var(--text)}
+@media(max-width:820px){.brandLogo{width:130px}.heroBtn.configBtn{width:100%}}
+</style>
 </head>
 <body>
 <main>
 <section class="hero">
   <div class="heroTop">
     <div>
-      <h1 class="brand"><span class="brandMark" aria-hidden="true">TP</span>Train<span>Pro</span></h1>
+      <h1 class="brand"><img class="brandLogo" src="./logo.jpg" alt="TrainPro" width="1024" height="572"></h1>
     </div>
     <div class="heroActions">
       <button class="heroBtn" data-view="workout" onclick="setMode(currentMode)">Train</button>
       <button class="heroBtn" data-view="diario" onclick="showTab('diario',this)">Diário</button>
       <button class="heroBtn" data-view="evolucao" onclick="showTab('evolucao',this)">Evolução</button>
-      <button class="heroBtn" data-view="config" onclick="showTab('config',this)">Config</button>
+      <button class="heroBtn configBtn" data-view="config" onclick="showTab('config',this)" aria-label="Configurações" title="Configurações"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 3-.6 2.2-1.5.9-2.2-.6-2.5 4.3 1.6 1.6v1.7l-1.6 1.6 2.5 4.3 2.2-.6 1.5.9.6 2.2h5l.6-2.2 1.5-.9 2.2.6 2.5-4.3-1.6-1.6v-1.7l1.6-1.6-2.5-4.3-2.2.6-1.5-.9-.6-2.2z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
   </div>
 </section>
@@ -549,7 +565,7 @@ class AppStateFactory {
     }
 }
 function validExercises(items) { return Array.isArray(items) && items.length <= 150 && new Set(items.map(e => e?.id)).size === items.length && items.every(e => e && typeof e.id === 'string' && /^[\w-]{1,100}$/.test(e.id) && ['name', 'block', 'meta', 'load', 'notes', 'url'].every(k => typeof e[k] === 'string' && e[k].length <= 2000) && e.name.trim() && e.meta.trim() && Number.isFinite(e.rest) && e.rest >= 0 && e.rest <= 900 && typeof e.done === 'boolean' && (!e.url || youtubeId(e.url))); }
-function validState(s) { return s?.version === 2 && Array.isArray(s.types) && s.types.length <= 80 && new Set(s.types.map(t => t.id)).size === s.types.length && s.types.every(t => /^[\w-]{1,100}$/.test(t.id) && typeof t.title === 'string' && t.title.trim() && t.title.length <= 80 && (t.subtitle === undefined || (typeof t.subtitle === 'string' && t.subtitle.length <= 120)) && ['gym', 'home'].includes(t.mode) && (!t.template || Object.hasOwn(gymTemplates, t.template)) && validExercises(s.plans?.[t.id]?.exercises)) && Array.isArray(s.catalog) && s.catalog.length <= 1000 && new Set(s.catalog.map(c => c.id)).size === s.catalog.length && s.catalog.every(c => /^[\w-]{1,100}$/.test(c.id) && ['gym', 'home'].includes(c.mode) && Object.hasOwn(FOCUS, c.focus) && typeof c.group === 'string' && validExercises([{ ...c, done: false }])) && Array.isArray(s.sessions) && s.sessions.length <= 10000 && s.sessions.every(x => typeof x.id === 'string' && /^[\w-]{1,120}$/.test(x.id) && typeof x.planId === 'string' && typeof x.title === 'string' && x.title.length <= 80 && /^\d{4}-\d{2}-\d{2}$/.test(x.date) && validExercises(x.exercises)); }
+function validState(s) { return s?.version === 2 && Array.isArray(s.types) && s.types.length <= 80 && new Set(s.types.map(t => t.id)).size === s.types.length && s.types.every(t => /^[\w-]{1,100}$/.test(t.id) && typeof t.title === 'string' && t.title.trim() && t.title.length <= 80 && (t.subtitle === undefined || (typeof t.subtitle === 'string' && t.subtitle.length <= 120)) && ['gym', 'home'].includes(t.mode) && (!t.template || Object.hasOwn(gymTemplates, t.template)) && validExercises(s.plans?.[t.id]?.exercises)) && Array.isArray(s.catalog) && s.catalog.length <= 1000 && new Set(s.catalog.map(c => c.id)).size === s.catalog.length && s.catalog.every(c => /^[\w-]{1,100}$/.test(c.id) && ['gym', 'home'].includes(c.mode) && Object.hasOwn(FOCUS, c.focus) && typeof c.group === 'string' && validExercises([{ ...c, done: false }])) && Array.isArray(s.sessions) && s.sessions.length <= 10000 && s.sessions.every(x => typeof x.id === 'string' && /^[\w-]{1,120}$/.test(x.id) && typeof x.planId === 'string' && typeof x.title === 'string' && x.title.length <= 80 && /^\d{4}-\d{2}-\d{2}$/.test(x.date) && validExercises(x.exercises)) && (s.bodyMetrics === undefined || validBodyMetrics(s.bodyMetrics)); }
 function loadState() { try {
     const s = repository.readApp();
     if (s) {
@@ -838,7 +854,7 @@ function revealSelectedTrain() {
 }
 function weekdayFromTrainName(title) {
     const clean = String(title || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const match = clean.match(/\b(segunda|terca|quarta|quinta|sexta|sabado|domingo)(?:\s*-\s*|\s+)feira\b|\b(sabado|domingo)\b/);
+    const match = clean.match(/\b(segunda|terca|quarta|quinta|sexta|sabado|domingo)(?:\s*-?\s*feira)?\b/);
     if (!match)
         return -1;
     return { domingo: 0, segunda: 1, terca: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6 }[match[1] || match[2]] ?? -1;
@@ -910,7 +926,7 @@ function cancelTypes() { typeDraft = null; renderNav(); }
 function renderWorkouts() { document.getElementById('workouts').innerHTML = app.types.map(t => `<section id="${t.id}" class="tab grid workoutTab hidden"></section>`).join(''); for (const t of app.types)
     renderPlan(t.id); }
 function setMode(mode) { if (editingLocked())
-    return; if (refreshWeeklyChecks()) repository.saveApp(app); keepNavScroll(); const previousMode = currentMode; currentMode = mode; document.getElementById('gymMode').classList.toggle('active', mode === 'gym'); document.getElementById('homeMode').classList.toggle('active', mode === 'home'); document.getElementById('trainShell').classList.remove('hidden'); const returningFromCrossfit = previousMode === 'home' && mode === 'gym'; const type = (returningFromCrossfit ? app.types.find(t => t.id === lastPlanByMode.gym && t.mode === 'gym') : todayTrain(mode)) || app.types.find(t => t.id === currentPlan && t.mode === mode) || app.types.find(t => t.id === lastPlanByMode[mode] && t.mode === mode) || app.types.find(t => t.mode === mode); if (type)
+    return; if (refreshWeeklyChecks()) repository.saveApp(app); keepNavScroll(); currentMode = mode; document.getElementById('gymMode').classList.toggle('active', mode === 'gym'); document.getElementById('homeMode').classList.toggle('active', mode === 'home'); document.getElementById('trainShell').classList.remove('hidden'); const type = app.types.find(t => t.id === lastPlanByMode[mode] && t.mode === mode) || todayTrain(mode) || app.types.find(t => t.id === currentPlan && t.mode === mode) || app.types.find(t => t.mode === mode); if (type)
     showTab(type.id);
 else {
     activeView = 'workout';
@@ -1165,15 +1181,39 @@ function tickCrossfit() { let finished = false; for (const t of app.types.filter
     }
 } if (finished)
     persist('Tempo do Crossfit concluído.'); syncCrossfitLabels(); }
-function scheduledWorkoutDate(type) {
-    if (type.mode !== 'gym') return dateKey();
-    const currentWeek = weekKey();
-    const assigned = [1, 2, 3, 4, 5, 6, 0].find(day => repository.getItem(`${currentWeek}-workout-${day}`) === 'type:' + type.id);
+function scheduledWorkoutDate(type, reference = new Date()) {
+    const currentWeek = weekKeyFromDate(reference);
+    const assigned = [1, 2, 3, 4, 5, 6, 0].filter(day => {
+        const value = repository.getItem(`${currentWeek}-workout-${day}`);
+        return value === 'type:' + type.id || value === type.title;
+    });
     const namedDay = weekdayFromTrainName(type.title);
     const mapped = [1, 2, 3, 4, 5, 6, 0].find(day => app.dayPlans?.[day] === type.id && !repository.getItem(`${currentWeek}-workout-${day}`));
-    const day = assigned ?? (namedDay >= 0 ? namedDay : mapped);
-    if (day === undefined) return dateKey();
-    const target = startOfWeek(new Date());
+    const day = assigned.length ? (assigned.includes(namedDay) ? namedDay : assigned.includes(reference.getDay()) ? reference.getDay() : assigned[0]) : (namedDay >= 0 ? namedDay : mapped);
+    if (day === undefined) return dateKey(reference);
+    const target = startOfWeek(reference);
+    target.setDate(target.getDate() + (day === 0 ? 6 : day - 1));
+    return dateKey(target);
+}
+function isCalendarDate(value) {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const date = new Date(value + 'T12:00:00');
+    return !Number.isNaN(date.getTime()) && dateKey(date) === value;
+}
+function sessionWorkoutDate(session) {
+    if (isCalendarDate(session.workoutDate)) return session.workoutDate;
+    if (!isCalendarDate(session.date)) return session.date;
+    // Registros antigos usavam o dia do preenchimento. Use apenas o nome salvo
+    // na sessão ou o agendamento daquela semana, sem depender do Train atual.
+    const reference = new Date(session.date + 'T12:00:00'), week = weekKeyFromDate(reference);
+    const assigned = [1, 2, 3, 4, 5, 6, 0].filter(day => {
+        const value = repository.getItem(`${week}-workout-${day}`);
+        return value === 'type:' + session.planId || value === session.title;
+    });
+    const named = weekdayFromTrainName(session.title);
+    const day = assigned.length ? (assigned.includes(reference.getDay()) ? reference.getDay() : assigned.includes(named) ? named : assigned.length === 1 ? assigned[0] : -1) : named;
+    if (day < 0) return session.date;
+    const target = startOfWeek(reference);
     target.setDate(target.getDate() + (day === 0 ? 6 : day - 1));
     return dateKey(target);
 }
@@ -1190,12 +1230,12 @@ function completeWorkout(id, selectedIds, crossfit = {}) {
     const p = app.plans[id], type = typeById(id), selected = p.exercises.filter(e => selectedIds.includes(e.id));
     if (!selected.length) return false;
     const previous = clone(app), date = scheduledWorkoutDate(type), key = date + '-' + id;
-    const previousSessions = app.sessions.filter(s => s.planId === id && (s.id === key || (type.mode === 'gym' && weekKeyFromDate(new Date(s.date + 'T12:00:00')) === weekKey())));
+    const previousSessions = app.sessions.filter(s => s.planId === id && (s.id === key || (type.mode === 'gym' && weekKeyFromDate(new Date(sessionWorkoutDate(s) + 'T12:00:00')) === weekKey())));
     const completedExercises = new Map();
     for (const previousSession of previousSessions)
         for (const exercise of previousSession.exercises || []) completedExercises.set(exercise.id || exercise.name, exercise);
     for (const exercise of selected) completedExercises.set(exercise.id || exercise.name, { ...clone(exercise), done: true });
-    const session = { id: key, date, planId: id, title: type.title, mode: type.mode, finishedAt: new Date().toISOString(), exercises: [...completedExercises.values()] };
+    const session = { id: key, date, workoutDate: date, planId: id, title: type.title, mode: type.mode, finishedAt: new Date().toISOString(), exercises: [...completedExercises.values()] };
     if (type.mode === 'home') {
         const c = crossfitClock(id);
         session.rounds = Math.max(0, Math.min(9999, Math.floor(Number(crossfit.rounds ?? c.rounds) || 0)));
@@ -1310,16 +1350,94 @@ else {
     repository.removeItem('hist-' + id);
     repository.removeItem('histWorkout-' + id);
 } renderDiario(); }
-function sessionsOn(date) { return app.sessions.filter(s => s.date === date); }
+function sessionsOn(date) { return app.sessions.filter(s => sessionWorkoutDate(s) === date); }
 function loadLabel(value) { const text = String(value || '').trim(); return parseLoads(text) ? text.replace(/\s*kg\b/gi, '') + ' kg' : text; }
 function sessionHtml(s) { return `<div class="sessionTitle">${esc(s.title)}<span class="sessionType">${modeLabel(s.mode)}${s.mode === 'home' && Number.isFinite(s.rounds) ? ' · ' + s.rounds + ' rounds' : ''}${s.mode === 'home' && Number.isFinite(s.durationSec) ? ' · ' + mmss(s.durationSec) : ''}</span></div><ol>${s.exercises.map(e => `<li class="sessionExercise">${esc(nameCase(e.name))} · ${esc(repLabel(e.meta))}${e.load ? ' · ' + esc(loadLabel(e.load)) : ''}${e.notes ? `<span class="meta">${esc(e.notes)}</span>` : ''}</li>`).join('')}</ol>`; }
+function validBodyMetrics(value) {
+    if (!value || typeof value !== 'object' || !Array.isArray(value.weekly) || value.weekly.length > 10000) return false;
+    const validWeight = weight => Number.isFinite(weight) && weight > 0 && weight <= 1000;
+    if (value.initial != null && (!validWeight(value.initial.weightKg) || !Number.isFinite(value.initial.heightCm) || value.initial.heightCm <= 0 || value.initial.heightCm > 300 || !isCalendarDate(value.initial.date))) return false;
+    return new Set(value.weekly.map(item => item?.week)).size === value.weekly.length && value.weekly.every(item => item && isCalendarDate(item.week) && new Date(item.week + 'T12:00:00').getDay() === 1 && validWeight(item.weightKg));
+}
+function bodyMetrics() {
+    return validBodyMetrics(app.bodyMetrics) ? app.bodyMetrics : { initial: null, weekly: [] };
+}
+function measurementNumber(value) {
+    const text = String(value).trim();
+    return /^\d+(?:[.,]\d{1,2})?$/.test(text) ? Number(text.replace(',', '.')) : NaN;
+}
+function initialMeasurementsHtml() {
+    const initial = bodyMetrics().initial;
+    return `<details class="bodySetup"><summary>Dados iniciais</summary>${initial ? `<p class="bodySummary">${numberText(initial.weightKg, 2)} kg · ${numberText(initial.heightCm, 2)} cm · ${fmtFull(new Date(initial.date + 'T12:00:00'))}</p>` : ''}<form onsubmit="saveInitialMeasurements(event)"><div class="bodyFields"><label class="field">Peso inicial (kg)<input id="initialWeight" type="text" inputmode="decimal" autocomplete="off" maxlength="8" required value="${initial?.weightKg ?? ''}" placeholder="Ex.: 80,5"></label><label class="field">Altura (cm)<input id="initialHeight" type="text" inputmode="decimal" autocomplete="off" maxlength="8" required value="${initial?.heightCm ?? ''}" placeholder="Ex.: 175"></label><label class="field">Data inicial<input id="initialDate" type="date" required max="${dateKey()}" value="${initial?.date || dateKey()}"></label></div><p id="initialMeasurementsError" class="formError" role="alert"></p><div class="measurementActions"><button type="submit" class="primary">Salvar dados iniciais</button></div></form></details>`;
+}
+function saveInitialMeasurements(event) {
+    event.preventDefault();
+    const initial = { weightKg: measurementNumber(document.getElementById('initialWeight').value), heightCm: measurementNumber(document.getElementById('initialHeight').value), date: document.getElementById('initialDate').value };
+    const next = { ...clone(bodyMetrics()), initial };
+    if (!validBodyMetrics(next) || initial.date > dateKey()) {
+        document.getElementById('initialMeasurementsError').textContent = 'Informe peso e altura positivos e uma data válida até hoje.';
+        return;
+    }
+    const previous = app.bodyMetrics;
+    app.bodyMetrics = next;
+    if (!persist('Dados iniciais salvos')) {
+        app.bodyMetrics = previous;
+        document.getElementById('initialMeasurementsError').textContent = 'Não foi possível salvar os dados.';
+        return;
+    }
+    renderEvolution();
+}
+function weeklyWeightHtml(start) {
+    const week = dateKey(start), item = bodyMetrics().weekly.find(item => item.week === week);
+    return `<form class="weeklyWeight" onsubmit="saveWeeklyWeight(event,'${week}')"><label class="field">Peso da semana (kg)<input id="weeklyWeight" type="text" inputmode="decimal" autocomplete="off" maxlength="8" required value="${item?.weightKg ?? ''}" placeholder="Ex.: 79,5"></label><button type="submit">Salvar peso</button>${item ? `<button type="button" class="removeWeight" onclick="removeWeeklyWeight('${week}')">Remover peso</button>` : ''}<p id="weeklyWeightError" class="formError" role="alert"></p></form>`;
+}
+function saveWeeklyWeight(event, week) {
+    event.preventDefault();
+    const weightKg = measurementNumber(document.getElementById('weeklyWeight').value), next = clone(bodyMetrics());
+    next.weekly = next.weekly.filter(item => item.week !== week);
+    next.weekly.push({ week, weightKg });
+    next.weekly.sort((a, b) => a.week.localeCompare(b.week));
+    if (!validBodyMetrics(next) || week > dateKey()) {
+        document.getElementById('weeklyWeightError').textContent = 'Informe um peso válido, maior que zero.';
+        return;
+    }
+    const previous = app.bodyMetrics;
+    app.bodyMetrics = next;
+    if (!persist('Peso da semana salvo')) {
+        app.bodyMetrics = previous;
+        document.getElementById('weeklyWeightError').textContent = 'Não foi possível salvar o peso.';
+        return;
+    }
+    renderDiario();
+}
+function removeWeeklyWeight(week) {
+    const previous = app.bodyMetrics, next = clone(bodyMetrics());
+    next.weekly = next.weekly.filter(item => item.week !== week);
+    app.bodyMetrics = next;
+    if (!persist('Peso da semana removido')) { app.bodyMetrics = previous; return; }
+    renderDiario();
+}
+function bodyWeightProgress(metrics, first, end) {
+    const points = metrics.weekly.filter(item => item.week >= first && item.week <= end)
+        .map(item => ({ date: item.week, label: fmt(new Date(item.week + 'T12:00:00')), value: item.weightKg, detail: 'Peso da semana' }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+    if (metrics.initial && metrics.initial.date <= end) {
+        points.unshift({ date: metrics.initial.date, label: 'Inicial', value: metrics.initial.weightKg, initial: true, detail: 'Peso inicial · ' + fmtFull(new Date(metrics.initial.date + 'T12:00:00')) });
+    }
+    return points;
+}
+function mergeBodyMetrics(current, incoming) {
+    const weights = new Map(incoming.weekly.map(item => [item.week, clone(item)]));
+    current.weekly.forEach(item => weights.set(item.week, clone(item)));
+    return { initial: clone(current.initial || incoming.initial || null), weekly: [...weights.values()].sort((a, b) => a.week.localeCompare(b.week)) };
+}
 function renderDiario(view = 'semana') {
     if (view === 'historico') {
         renderHistorico();
         return;
     }
     const start = startOfWeek(new Date()), today = dateKey(), names = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-    document.getElementById('diario').innerHTML = `<div class="card"><h2>Diário</h2><div class="diaryTabs"><button class="active" onclick="renderDiario()">Semana atual</button><button onclick="renderHistorico()">Histórico</button></div><p>Semana de ${fmt(start)}</p><div class="schedule">${names.map((name, i) => { const d = new Date(start); d.setDate(d.getDate() + i); const id = histIdFromDate(d), key = dateKey(d), wk = dayWorkout(d.getDay()), sessions = sessionsOn(key), legacy = repository.getItem('hist-' + id) === '1', choices = [...new Set(['Descanso', 'Caminhada ou descanso', ...app.types.map(t => t.title), wk])]; return `<div class="day ${key === today ? 'today' : ''}"><div class="dayName">${name}</div><div class="date">${fmt(d)}</div><select aria-label="Treino de ${name}" onchange="setDayWorkout(${d.getDay()},this.value)">${choices.map(o => `<option ${o === wk ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>${sessions.length ? `<details class="dayDetails"><summary>${sessions.length} treino${sessions.length === 1 ? '' : 's'} concluído${sessions.length === 1 ? '' : 's'}</summary>${sessions.map(sessionHtml).join('')}</details>` : `<label class="done"><input type="checkbox" ${legacy ? 'checked' : ''} data-workout="${esc(wk)}" onchange="setDone('${id}',this.dataset.workout,this.checked)"><span>Feito</span></label>`}</div>`; }).join('')}</div></div>`;
+    document.getElementById('diario').innerHTML = `<div class="card"><h2>Diário</h2><div class="diaryTabs"><button class="active" onclick="renderDiario()">Semana atual</button><button onclick="renderHistorico()">Histórico</button></div><div class="weekSummary"><p>Semana de ${fmt(start)}</p>${weeklyWeightHtml(start)}</div><div class="schedule">${names.map((name, i) => { const d = new Date(start); d.setDate(d.getDate() + i); const id = histIdFromDate(d), key = dateKey(d), wk = dayWorkout(d.getDay()), sessions = sessionsOn(key), legacy = repository.getItem('hist-' + id) === '1', choices = [...new Set(['Descanso', 'Caminhada ou descanso', ...app.types.map(t => t.title), wk])]; return `<div class="day ${key === today ? 'today' : ''}"><div class="dayName">${name}</div><div class="date">${fmt(d)}</div><select aria-label="Treino de ${name}" onchange="setDayWorkout(${d.getDay()},this.value)">${choices.map(o => `<option ${o === wk ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>${sessions.length ? `<details class="dayDetails"><summary>${sessions.length} treino${sessions.length === 1 ? '' : 's'} concluído${sessions.length === 1 ? '' : 's'}</summary>${sessions.map(sessionHtml).join('')}</details>` : `<label class="done"><input type="checkbox" ${legacy ? 'checked' : ''} data-workout="${esc(wk)}" onchange="setDone('${id}',this.dataset.workout,this.checked)"><span>Feito</span></label>`}</div>`; }).join('')}</div></div>`;
 }
 function renderHistorico() {
     const y = historyMonth.getFullYear(), m = historyMonth.getMonth(), first = new Date(y, m, 1), last = new Date(y, m + 1, 0), offset = (first.getDay() + 6) % 7, cells = [];
@@ -1519,13 +1637,15 @@ class DiaryTransfer {
         return { legacy, assignments };
     }
     static export() {
-        return { format: 'trainpro-diaries', version: 1, sessions: clone(app.sessions), ...DiaryTransfer.localRecords() };
+        return { format: 'trainpro-diaries', version: 1, sessions: app.sessions.map(session => ({ ...clone(session), date: sessionWorkoutDate(session), workoutDate: sessionWorkoutDate(session) })), bodyMetrics: clone(bodyMetrics()), ...DiaryTransfer.localRecords() };
     }
     static parse(data) {
         if (!data || data.format !== 'trainpro-diaries' || data.version !== 1)
             throw Error('Selecione um arquivo de Diários');
         if (!Array.isArray(data.sessions) || data.sessions.length > 10000 || !Array.isArray(data.legacy) || data.legacy.length > 20000 || !Array.isArray(data.assignments) || data.assignments.length > 20000)
             throw Error('Arquivo de Diários inválido');
+        if (data.bodyMetrics !== undefined && !validBodyMetrics(data.bodyMetrics))
+            throw Error('Dados de peso e altura inválidos');
         for (const s of data.sessions) {
             if (!s || typeof s.id !== 'string' || !/^[\w-]{1,120}$/.test(s.id) || typeof s.planId !== 'string' || typeof s.title !== 'string' || s.title.length > 80 || !/^\d{4}-\d{2}-\d{2}$/.test(s.date) || !validExercises(s.exercises))
                 throw Error('Sessão do Diário inválida');
@@ -1555,10 +1675,12 @@ async function importDiary(file) {
         throw Error('Limite do Diário excedido');
     if (!confirm(`Importar ${data.sessions.length} sessões e o histórico deste arquivo? As sessões já existentes não serão duplicadas; os seus Trains e exercícios não serão alterados.`))
         return;
-    const previous = clone(app.sessions);
+    const previous = clone(app.sessions), previousMetrics = app.bodyMetrics;
     app.sessions.push(...clone(incoming));
+    if (data.bodyMetrics) app.bodyMetrics = mergeBodyMetrics(bodyMetrics(), data.bodyMetrics);
     if (!persist('Diários importados')) {
         app.sessions = previous;
+        app.bodyMetrics = previousMetrics;
         return;
     }
     for (const v of data.legacy) {
@@ -1603,7 +1725,7 @@ function exerciseVolume(e) { const match = String(e.meta).match(/^\s*(\d+)\s*[x�
     return null; if (loads.length === 1)
     return sets * reps * loads[0]; if (loads.length === sets)
     return loads.reduce((sum, n) => sum + n, 0) * reps; return null; }
-function analyticsSessions() { const records = app.sessions.map(s => ({ ...s, mode: ['gym', 'home'].includes(s.mode) ? s.mode : 'unknown' })); try {
+function analyticsSessions() { const records = app.sessions.map(s => ({ ...s, date: sessionWorkoutDate(s), mode: ['gym', 'home'].includes(s.mode) ? s.mode : 'unknown' })); try {
     for (let i = 0; i < repository.length; i++) {
         const key = repository.key(i);
         if (key?.startsWith('hist-') && repository.getItem(key) === '1') {
@@ -1613,7 +1735,9 @@ function analyticsSessions() { const records = app.sessions.map(s => ({ ...s, mo
             const date = dateKey(d);
             if (records.some(s => s.date === date))
                 continue;
-            records.push({ id: 'legacy-' + id, date, title: repository.getItem('histWorkout-' + id) || 'Treino', mode: 'unknown', exercises: [] });
+            const title = repository.getItem('histWorkout-' + id) || 'Treino';
+            const types = app.types.filter(type => type.title === title);
+            records.push({ id: 'legacy-' + id, date, title, mode: types.length === 1 ? types[0].mode : 'unknown', exercises: [] });
         }
     }
 }
@@ -1668,25 +1792,26 @@ function loadProgress(sessions, key, grouping) { const groups = new Map(); for (
     }
 } return [...groups.values()].sort((a, b) => a.date.localeCompare(b.date)); }
 function numberText(value, digits = 1) { return Number(value).toLocaleString('pt-BR', { maximumFractionDigits: digits }); }
-function chartSvg(points, { line = false, colors = ['#e5b763'], labels = ['Valor'], unit = '', title = 'Gráfico' } = {}) {
+function chartSvg(points, { line = false, colors = ['#e5b763'], labels = ['Valor'], unit = '', title = 'Gráfico', reference = null } = {}) {
     if (!points.length)
         return '<div class="chartEmpty">Sem registros para este período.</div>';
-    const W = 520, H = 222, left = 50, right = 14, top = 16, bottom = 39, plotW = W - left - right, plotH = H - top - bottom, totals = points.map(p => p.values ? p.values.reduce((a, b) => a + b, 0) : p.value), max = Math.max(1, ...totals) * 1.12, y = v => top + plotH - v / max * plotH, slot = plotW / points.length, x = i => left + slot * (i + .5), bars = [];
+    const W = 520, H = 222, left = 50, right = 14, top = 16, bottom = 39, plotW = W - left - right, plotH = H - top - bottom, totals = points.map(p => p.values ? p.values.reduce((a, b) => a + b, 0) : p.value), max = Math.max(1, ...totals, reference?.value || 0) * 1.12, y = v => top + plotH - v / max * plotH, slot = plotW / points.length, x = i => left + slot * (i + .5), bars = [];
     for (let i = 0; i < 5; i++) {
         const val = max * i / 4;
         bars.push(`<line class="gridline" x1="${left}" y1="${y(val)}" x2="${W - right}" y2="${y(val)}"/><text x="${left - 7}" y="${y(val) + 3}" text-anchor="end">${esc(val >= 10000 ? numberText(val / 1000, 0) + 'k' : numberText(val, max > 10 ? 0 : 1))}</text>`);
     }
+    if (reference) bars.push(`<line x1="${left}" y1="${y(reference.value)}" x2="${W - right}" y2="${y(reference.value)}" stroke="#e5b763" stroke-width="1.5" stroke-dasharray="6 5"><title>${esc(reference.label + ": " + numberText(reference.value, 2) + " " + unit)}</title></line>`);
     const stride = Math.max(1, Math.ceil(points.length / 7));
     points.forEach((p, i) => { if (i % stride === 0 || i === points.length - 1)
         bars.push(`<text x="${x(i)}" y="${H - 17}" text-anchor="middle">${esc(p.label)}</text>`); });
     if (line) {
         bars.push(`<polyline points="${points.map((p, i) => `${x(i)},${y(p.value)}`).join(' ')}" fill="none" stroke="${colors[0]}" stroke-width="3"/>`);
-        points.forEach((p, i) => bars.push(`<circle cx="${x(i)}" cy="${y(p.value)}" r="5" fill="${colors[0]}" tabindex="0"><title>${esc(p.label + ': ' + numberText(p.value) + ' ' + unit + (p.detail ? ' · ' + p.detail : ''))}</title></circle>`));
+        points.forEach((p, i) => bars.push(`<circle cx="${x(i)}" cy="${y(p.value)}" r="${p.initial ? 7 : 5}" fill="${p.initial ? '#e5b763' : colors[0]}" stroke="${p.initial ? '#fff0ca' : colors[0]}" stroke-width="${p.initial ? 2 : 0}" tabindex="0"><title>${esc(p.label + ': ' + numberText(p.value) + ' ' + unit + (p.detail ? ' · ' + p.detail : ''))}</title></circle>`));
     }
     else
         points.forEach((p, i) => { let base = 0; const values = p.values || [p.value]; values.forEach((v, j) => { if (v > 0)
             bars.push(`<rect x="${x(i) - Math.min(30, slot * .65) / 2}" y="${y(base + v)}" width="${Math.min(30, slot * .65)}" height="${Math.max(0, v / max * plotH)}" rx="2" fill="${colors[j % colors.length]}" tabindex="0"><title>${esc(p.label + ' · ' + (labels[j] || '') + ': ' + numberText(v) + ' ' + unit + (p.detail ? ' · ' + p.detail : ''))}</title></rect>`); base += v; }); });
-    const table = `<details class="metricTable"><summary>Ver valores</summary><table><thead><tr><th>Data / semana</th>${labels.map(l => `<th>${esc(l + (unit ? ' · ' + unit : ''))}</th>`).join('')}</tr></thead><tbody>${points.map(p => `<tr><td>${esc(p.label)}</td>${(p.values || [p.value]).map(v => `<td>${numberText(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`;
+    const table = `<details class="metricTable"><summary>Ver valores</summary><table><thead><tr><th>Data / semana</th>${labels.map(l => `<th>${esc(l + (unit ? ' · ' + unit : ''))}</th>`).join('')}</tr></thead><tbody>${points.map(p => `<tr><td>${esc(p.initial ? p.detail : p.label)}</td>${(p.values || [p.value]).map(v => `<td>${numberText(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`;
     return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title>${bars.join('')}</svg>${table}`;
 }
 function metricCard(title, value, unit, caption, chart, controls = '') { return `<article class="metricCard"><h2>${title}</h2><div class="metricValue">${esc(value)} <span class="metricUnit">${unit}</span></div><p class="metricCaption">${caption}</p>${controls}${chart}</article>`; }
@@ -1697,6 +1822,10 @@ function setEvolutionFilter(kind, value) { if (kind === 'mode')
     evolutionGrouping = value; renderEvolution(); }
 function renderEvolution() {
     const data = buildEvolutionData(analyticsSessions(), evolutionWeeks, evolutionMode), { sessions, buckets } = data;
+    const measurements = bodyMetrics(), weightPoints = bodyWeightProgress(measurements, data.first, data.end), latestWeight = weightPoints.at(-1)?.value;
+    const difference = measurements.initial && latestWeight !== undefined ? latestWeight - measurements.initial.weightKg : null;
+    const weightCaption = measurements.initial ? `Inicial: ${numberText(measurements.initial.weightKg, 2)} kg · Altura: ${numberText(measurements.initial.heightCm, 2)} cm${difference === null ? '' : `<span class="weightChange">${difference > 0 ? '+' : difference < 0 ? '−' : ''}${numberText(Math.abs(difference), 2)} kg em relação ao peso inicial</span>`}` : 'Peso corporal registrado por semana.';
+    const weightLegend = measurements.initial ? '<div class="chartLegend weightLegend"><span><i style="background:#e5b763"></i>Peso inicial · referência</span><span><i style="background:#86d6b0"></i>Peso semanal</span></div>' : ''; 
     if (!data.exercises.some(e => e.key === evolutionExercise))
         evolutionExercise = data.exercises[0]?.key || '';
     const hasSessions = sessions.length > 0, empty = '<div class="chartEmpty">Finalize um treino para começar.</div>', sum = k => buckets.reduce((s, b) => s + b[k], 0), weekly = k => buckets.map(b => ({ label: b.label, value: typeof k === 'function' ? k(b) : b[k] }));
@@ -1705,6 +1834,7 @@ function renderEvolution() {
     const rounds = sessions.filter(s => s.mode === 'home' && Number.isFinite(s.rounds)).map(s => ({ label: fmt(new Date(s.date + 'T12:00:00')), value: s.rounds, detail: s.title }));
     const frequencyChart = hasSessions ? '<div class="chartLegend"><span><i style="background:#e5b763"></i>Academia</span><span><i style="background:#60a5fa"></i>Crossfit</span>' + (sum('unknown') ? '<span><i style="background:#718096"></i>Sem modalidade</span>' : '') + '</div>' + chartSvg(frequency, { colors: ['#e5b763', '#60a5fa', '#718096'], labels: ['Academia', 'Crossfit', 'Sem modalidade'], unit: 'treinos', title: 'Treinos por semana e modalidade' }) : empty;
     const cards = [
+        metricCard('Peso corporal', latestWeight === undefined ? '—' : numberText(latestWeight, 2), 'kg', weightCaption, weightLegend + chartSvg(weightPoints, { line: true, colors: ['#86d6b0'], unit: 'kg', labels: ['Peso corporal'], title: 'Peso corporal por semana', reference: measurements.initial ? { value: measurements.initial.weightKg, label: 'Peso inicial' } : null })),
         metricCard('Frequência de treinos', numberText(sessions.length, 0), 'treinos', 'Sessões finalizadas por semana.', frequencyChart),
         metricCard('Dias ativos', numberText(days, 0), 'dias', 'Dias distintos com pelo menos um treino, por semana.', hasSessions ? chartSvg(weekly(b => b.days.size), { unit: 'dias', labels: ['Dias ativos'], title: 'Dias ativos por semana' }) : empty),
         metricCard('Evolução de carga', peak === null ? '—' : numberText(peak), 'kg · maior carga', 'Maior valor registrado por dia ou semana. Em 20/40/60, considera 60 kg.', chartSvg(progress, { line: true, unit: 'kg', labels: ['Maior carga'], title: 'Evolução da maior carga do exercício' }), exerciseControls),
@@ -1713,7 +1843,7 @@ function renderEvolution() {
         metricCard('Rounds no Crossfit', rounds.length ? numberText(rounds.reduce((n, p) => n + p.value, 0), 0) : '—', 'rounds', 'Rounds concluídos em cada sessão de Crossfit.', chartSvg(rounds, { colors: ['#60a5fa'], unit: 'rounds', labels: ['Rounds'], title: 'Rounds por sessão de Crossfit' })),
         metricCard('Tempo de Crossfit', sum('timed') ? numberText(sum('minutes')) : '—', 'minutos', 'Tempo registrado nas sessões, somado por semana.', sum('timed') ? chartSvg(weekly('minutes'), { colors: ['#60a5fa'], unit: 'min', labels: ['Tempo'], title: 'Tempo de Crossfit por semana' }) : '<div class="chartEmpty">Finalize um Crossfit com o tempo registrado.</div>')
     ];
-    document.getElementById('evolucao').innerHTML = `<div class="evolutionHeader"><h2 style="margin:0">Sua evolução</h2><span class="wip">Em desenvolvimento</span></div><div class="evolutionFilters"><label class="field">Modalidade<select onchange="setEvolutionFilter('mode',this.value)"><option value="all">Todas</option><option value="gym" ${evolutionMode === 'gym' ? 'selected' : ''}>Academia</option><option value="home" ${evolutionMode === 'home' ? 'selected' : ''}>Crossfit</option></select></label><label class="field">Período<select onchange="setEvolutionFilter('weeks',this.value)">${[4, 8, 12, 24].map(n => `<option value="${n}" ${n === evolutionWeeks ? 'selected' : ''}>Últimas ${n} semanas</option>`).join('')}</select></label></div><div class="chartGrid">${cards.join('')}</div>`;
+    document.getElementById('evolucao').innerHTML = `<div class="evolutionHeader"><h2 style="margin:0">Sua evolução</h2><span class="wip">Em desenvolvimento</span></div>${initialMeasurementsHtml()}<div class="evolutionFilters"><label class="field">Modalidade<select onchange="setEvolutionFilter('mode',this.value)"><option value="all">Todas</option><option value="gym" ${evolutionMode === 'gym' ? 'selected' : ''}>Academia</option><option value="home" ${evolutionMode === 'home' ? 'selected' : ''}>Crossfit</option></select></label><label class="field">Período<select onchange="setEvolutionFilter('weeks',this.value)">${[4, 8, 12, 24].map(n => `<option value="${n}" ${n === evolutionWeeks ? 'selected' : ''}>Últimas ${n} semanas</option>`).join('')}</select></label></div><div class="chartGrid">${cards.join('')}</div>`;
 }
 renderWorkouts();
 renderConfig();
