@@ -1,6 +1,6 @@
 const PREFIX='trainpro-v2-'+new URL(self.registration.scope).pathname+'-';
-const CACHE=PREFIX+'825b079bc80f';
-const ASSETS=["index.html","logo.jpg","icon-192.png","icon-512.png","manifest.webmanifest","assets/index-bcnHdWxf.css","assets/react-CK2K1_Ez.js","assets/validation-kdM93vdI.js","assets/brazilian-foods-CLluZUUo.js","assets/index-OM8FMyHS.js"];
+const CACHE=PREFIX+'eb3c75405f13';
+const ASSETS=["index.html","logo.jpg","icon-180.png","icon-192.png","icon-512.png","manifest.webmanifest","assets/index-bcnHdWxf.css","assets/react-CK2K1_Ez.js","assets/validation-kdM93vdI.js","assets/brazilian-foods-CLluZUUo.js","assets/index-_rK4veDA.js"];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
 self.addEventListener('message',event=>{if(event.data==='ACTIVATE_UPDATE')self.skipWaiting();});
